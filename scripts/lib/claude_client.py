@@ -19,9 +19,9 @@ logger = logging.getLogger("ai-broker")
 AGENTS_DIR = ROOT / "agents"
 
 # 高速・低コストモデル（コメント生成用）
-FAST_MODEL = "gpt-4o-mini"
+FAST_MODEL = "gpt-5.2"
 # 高品質モデル（週次討論用）
-QUALITY_MODEL = "gpt-4o"
+QUALITY_MODEL = "gpt-5.2"
 
 
 def _get_client() -> OpenAI:
