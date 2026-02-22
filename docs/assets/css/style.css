@@ -1,0 +1,128 @@
+/* ai-broker — グローバルスタイル */
+
+:root {
+  --color-taro:      #3b82f6;
+  --color-aiko:      #10b981;
+  --color-ribao:     #8b5cf6;
+  --color-jiro:      #f59e0b;
+  --color-omakaseko: #ec4899;
+  --color-mirai:     #14b8a6;
+}
+
+/* ─── タイポグラフィ ─────────────────────────────────────────── */
+body {
+  font-family: 'Noto Sans JP', 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN',
+               'Hiragino Sans', Meiryo, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── 数値表示（等幅） ────────────────────────────────────────── */
+.font-mono,
+.value-mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* ─── カラーユーティリティ ───────────────────────────────────── */
+.text-up   { color: #dc2626; } /* 上昇 = 赤（日本式） */
+.text-down { color: #2563eb; } /* 下落 = 青（日本式） */
+
+/* ─── カードホバー ────────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── エージェント別ボーダーカラー ──────────────────────────── */
+.agent-taro      { border-color: var(--color-taro); }
+.agent-aiko      { border-color: var(--color-aiko); }
+.agent-ribao     { border-color: var(--color-ribao); }
+.agent-jiro      { border-color: var(--color-jiro); }
+.agent-omakaseko { border-color: var(--color-omakaseko); }
+.agent-mirai     { border-color: var(--color-mirai); }
+
+/* ─── アバター ────────────────────────────────────────────────── */
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  object-fit: cover;
+}
+
+.avatar-md {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid #e5e7eb;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid #e5e7eb;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* ─── テーブル ────────────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table th {
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tr:hover td {
+  background: #f9fafb;
+}
+
+/* ─── パンくずリスト ─────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.breadcrumb a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* ─── レスポンシブ調整 ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+}

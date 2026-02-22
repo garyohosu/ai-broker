@@ -1,11 +1,14 @@
 {
   "version": "0.1",
   "updated": "",
+  "description": "進化未来による重み付け配分。月1回更新。直近12週の成績を基に調整。",
+  "update_rule": "月次第1土曜日に更新。成績上位に重みを寄せる。変化幅±0.1以内。最低0.05、最高0.50。",
   "weights": {
-    "taro": 0.3,
-    "aiko": 0.25,
-    "ribao": 0.15,
+    "taro": 0.2,
+    "aiko": 0.2,
+    "ribao": 0.2,
     "jiro": 0.2,
-    "omakaseko": 0.1
+    "omakaseko": 0.1,
+    "mirai": 0.1
   }
 }

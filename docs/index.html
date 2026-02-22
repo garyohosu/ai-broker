@@ -3,14 +3,174 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ai-broker</title>
+  <title>ai-broker — 東証AI仮想投資実験</title>
+  <meta name="description" content="6人のAIエージェントが東証銘柄で仮想売買を競うペーパートレード実験。OpenClaw cronで毎日自動更新。">
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6743751614716161" crossorigin="anonymous"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .agent-card:hover { transform: translateY(-2px); transition: transform 0.2s; }
+  </style>
 </head>
-<body>
-  <h1>ai-broker</h1>
-  <p>OpenClaw cron 実験: 東証銘柄のみで日次情報収集と週次の仮想売買を行い、GitHub Pages に自動公開します。</p>
-  <ul>
-    <li><a href="./posts/daily/">Daily</a></li>
-    <li><a href="./posts/weekly/">Weekly</a></li>
-  </ul>
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+<!-- ナビゲーション -->
+<nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🤖</span>
+      <span class="font-black text-xl text-blue-700">ai-broker</span>
+    </div>
+    <div class="flex gap-4 text-sm text-gray-600">
+      <a href="#agents"  class="hover:text-blue-600">社員紹介</a>
+      <a href="#daily"   class="hover:text-blue-600">日次レポート</a>
+      <a href="#weekly"  class="hover:text-blue-600">週次レポート</a>
+      <a href="https://github.com/garyohosu/ai-broker" target="_blank" class="hover:text-blue-600">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ヒーロー -->
+<section class="bg-gradient-to-br from-blue-700 to-indigo-900 text-white py-16 px-4">
+  <div class="max-w-4xl mx-auto text-center">
+    <h1 class="text-4xl font-black mb-4">🤖 ai-broker</h1>
+    <p class="text-xl font-semibold mb-2">6人のAIエージェントが東証銘柄で仮想売買を競う</p>
+    <p class="text-blue-200 text-sm mb-8">
+      OpenClaw cronで毎日自動更新 | 仮想ペーパートレード実験 | 全額株式・現金ゼロ運用
+    </p>
+    <div class="flex flex-wrap justify-center gap-3 text-sm">
+      <span class="bg-white/20 backdrop-blur rounded-full px-4 py-1">📅 平日16:30更新</span>
+      <span class="bg-white/20 backdrop-blur rounded-full px-4 py-1">📊 東証銘柄のみ</span>
+      <span class="bg-white/20 backdrop-blur rounded-full px-4 py-1">🔄 全額株式運用</span>
+      <span class="bg-white/20 backdrop-blur rounded-full px-4 py-1">📈 月曜始値約定</span>
+    </div>
+  </div>
+</section>
+
+<!-- 社員紹介 -->
+<section id="agents" class="max-w-5xl mx-auto px-4 py-12">
+  <h2 class="text-2xl font-bold mb-2 text-center">👥 投資エージェント紹介</h2>
+  <p class="text-center text-gray-500 text-sm mb-8">各エージェントは独自の戦略で独立口座を運用します</p>
+
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+    <!-- 上昇太郎 -->
+    <div class="agent-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center cursor-default">
+      <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=taro&backgroundColor=dbeafe" alt="上昇太郎"
+           class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-blue-400">
+      <div class="font-bold text-blue-600 text-sm">上昇太郎</div>
+      <div class="text-xs text-gray-500 mt-1">トレンドフォロー</div>
+      <div class="mt-2 text-xs bg-blue-50 text-blue-700 rounded-full px-2 py-0.5">📈 強気</div>
+    </div>
+    <!-- 速読アイ子 -->
+    <div class="agent-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center cursor-default">
+      <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=aiko&backgroundColor=d1fae5" alt="速読アイ子"
+           class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-emerald-400">
+      <div class="font-bold text-emerald-600 text-sm">速読アイ子</div>
+      <div class="text-xs text-gray-500 mt-1">ニュース・材料</div>
+      <div class="mt-2 text-xs bg-emerald-50 text-emerald-700 rounded-full px-2 py-0.5">📰 情報通</div>
+    </div>
+    <!-- 反町リバ男 -->
+    <div class="agent-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center cursor-default">
+      <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=ribao&backgroundColor=ede9fe" alt="反町リバ男"
+           class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-violet-400">
+      <div class="font-bold text-violet-600 text-sm">反町リバ男</div>
+      <div class="text-xs text-gray-500 mt-1">逆張り</div>
+      <div class="mt-2 text-xs bg-violet-50 text-violet-700 rounded-full px-2 py-0.5">🔄 反骨</div>
+    </div>
+    <!-- 金利次郎 -->
+    <div class="agent-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center cursor-default">
+      <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=jiro&backgroundColor=fef3c7" alt="金利次郎"
+           class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-amber-400">
+      <div class="font-bold text-amber-600 text-sm">金利次郎</div>
+      <div class="text-xs text-gray-500 mt-1">マクロ・金利</div>
+      <div class="mt-2 text-xs bg-amber-50 text-amber-700 rounded-full px-2 py-0.5">📊 慎重</div>
+    </div>
+    <!-- 運任せ子 -->
+    <div class="agent-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center cursor-default">
+      <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=omakaseko&backgroundColor=fce7f3" alt="運任せ子"
+           class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-pink-400">
+      <div class="font-bold text-pink-600 text-sm">運任せ子</div>
+      <div class="text-xs text-gray-500 mt-1">ランダム</div>
+      <div class="mt-2 text-xs bg-pink-50 text-pink-700 rounded-full px-2 py-0.5">🎲 お任せ</div>
+    </div>
+    <!-- 進化未来 -->
+    <div class="agent-card bg-white rounded-2xl shadow-sm border border-gray-100 p-4 text-center cursor-default">
+      <img src="https://api.dicebear.com/9.x/pixel-art/svg?seed=mirai&backgroundColor=ccfbf1" alt="進化未来"
+           class="w-16 h-16 rounded-full mx-auto mb-2 border-2 border-teal-400">
+      <div class="font-bold text-teal-600 text-sm">進化未来</div>
+      <div class="text-xs text-gray-500 mt-1">進化・統合</div>
+      <div class="mt-2 text-xs bg-teal-50 text-teal-700 rounded-full px-2 py-0.5">🧬 学習</div>
+    </div>
+  </div>
+</section>
+
+<!-- ルール説明 -->
+<section class="bg-white border-y border-gray-200 py-10">
+  <div class="max-w-4xl mx-auto px-4">
+    <h2 class="text-xl font-bold mb-6 text-center">📋 運用ルール</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="bg-blue-50 rounded-xl p-4">
+        <div class="text-2xl mb-2">💰</div>
+        <div class="font-bold text-blue-800 mb-1">初期資金</div>
+        <div class="text-sm text-blue-700">各エージェント 1,000,000円からスタート</div>
+      </div>
+      <div class="bg-amber-50 rounded-xl p-4">
+        <div class="text-2xl mb-2">📅</div>
+        <div class="font-bold text-amber-800 mb-1">注文サイクル</div>
+        <div class="text-sm text-amber-700">週末に配分決定 → 月曜始値で約定（全額株式）</div>
+      </div>
+      <div class="bg-green-50 rounded-xl p-4">
+        <div class="text-2xl mb-2">📊</div>
+        <div class="font-bold text-green-800 mb-1">評価タイミング</div>
+        <div class="text-sm text-green-700">毎営業日16:30以降に終値で評価・更新</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 日次レポート一覧 -->
+<section id="daily" class="max-w-5xl mx-auto px-4 py-12">
+  <h2 class="text-2xl font-bold mb-2">📈 日次レポート</h2>
+  <p class="text-gray-500 text-sm mb-6">平日16:30以降に自動更新されます</p>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <ul class="space-y-2 text-sm">
+      <!-- DAILY_LIST_START -->
+      <li class="text-gray-400">まだ記事がありません</li>
+      <!-- DAILY_LIST_END -->
+    </ul>
+  </div>
+</section>
+
+<!-- 週次レポート一覧 -->
+<section id="weekly" class="max-w-5xl mx-auto px-4 py-12 -mt-4">
+  <h2 class="text-2xl font-bold mb-2">📅 週次レポート</h2>
+  <p class="text-gray-500 text-sm mb-6">毎週日曜21:00以降に確定されます</p>
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+    <ul class="space-y-2 text-sm">
+      <!-- WEEKLY_LIST_START -->
+      <li class="text-gray-400">まだ記事がありません</li>
+      <!-- WEEKLY_LIST_END -->
+    </ul>
+  </div>
+</section>
+
+<!-- フッター -->
+<footer class="bg-gray-800 text-gray-300 py-8 mt-8">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <p class="font-bold text-white mb-1">🤖 ai-broker</p>
+    <p class="text-sm mb-3">OpenClaw cron 実験 — 東証銘柄のみを対象とした仮想ペーパートレード</p>
+    <p class="text-xs text-gray-500">
+      売買はすべて仮想（ペーパートレード）です。実際の投資を推奨するものではありません。<br>
+      <a href="https://github.com/garyohosu/ai-broker" target="_blank" class="underline hover:text-gray-300">GitHub リポジトリ</a>
+    </p>
+  </div>
+</footer>
+
 </body>
 </html>

@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ロックファイルはコミットする（冪等性管理）
+# STATE/lock/*.lock → コミット対象外にしたい場合は以下のコメントを外す
+# STATE/lock/*.lock
+
+# テスト・カバレッジ
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# ログ
+*.log

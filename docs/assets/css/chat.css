@@ -1,0 +1,96 @@
+/* ai-broker — チャットスタイル */
+
+/* ─── コンテナ ────────────────────────────────────────────────── */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+/* ─── メッセージ行 ────────────────────────────────────────────── */
+.msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── アバター ────────────────────────────────────────────────── */
+.msg .avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2.5px solid #e5e7eb;
+  flex-shrink: 0;
+  object-fit: cover;
+  margin-top: 2px;
+}
+
+/* ─── バブル ──────────────────────────────────────────────────── */
+.msg .bubble {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #94a3b8;
+  border-radius: 0 1rem 1rem 1rem;
+  padding: 0.625rem 0.875rem;
+  max-width: 75%;
+  word-break: break-word;
+}
+
+/* ─── 名前ラベル ──────────────────────────────────────────────── */
+.msg .name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: #64748b;
+  letter-spacing: 0.01em;
+}
+
+/* ─── 本文 ────────────────────────────────────────────────────── */
+.msg .text {
+  font-size: 0.9rem;
+  color: #1e293b;
+  line-height: 1.65;
+}
+
+/* ─── エージェント別カラー（border-left） ────────────────────── */
+.msg[data-agent="taro"]      .bubble { border-left-color: #3b82f6; background: #eff6ff; }
+.msg[data-agent="aiko"]      .bubble { border-left-color: #10b981; background: #f0fdf4; }
+.msg[data-agent="ribao"]     .bubble { border-left-color: #8b5cf6; background: #f5f3ff; }
+.msg[data-agent="jiro"]      .bubble { border-left-color: #f59e0b; background: #fffbeb; }
+.msg[data-agent="omakaseko"] .bubble { border-left-color: #ec4899; background: #fdf2f8; }
+.msg[data-agent="mirai"]     .bubble { border-left-color: #14b8a6; background: #f0fdfa; }
+
+.msg[data-agent="taro"]      .name { color: #3b82f6; }
+.msg[data-agent="aiko"]      .name { color: #10b981; }
+.msg[data-agent="ribao"]     .name { color: #8b5cf6; }
+.msg[data-agent="jiro"]      .name { color: #d97706; }
+.msg[data-agent="omakaseko"] .name { color: #ec4899; }
+.msg[data-agent="mirai"]     .name { color: #14b8a6; }
+
+/* ─── ハイライト（最後の発言など） ───────────────────────────── */
+.msg.highlight .bubble {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── レスポンシブ ────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .msg .bubble {
+    max-width: 90%;
+  }
+
+  .msg .avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .msg .text {
+    font-size: 0.85rem;
+  }
+}
