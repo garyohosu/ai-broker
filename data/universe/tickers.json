@@ -1,0 +1,5 @@
+{
+  "exchange": "TSE",
+  "note": "Put your universe tickers here (e.g., 7203, 6758, 9984)",
+  "tickers": []
+}

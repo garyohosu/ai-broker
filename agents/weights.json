@@ -1,0 +1,11 @@
+{
+  "version": "0.1",
+  "updated": "",
+  "weights": {
+    "taro": 0.3,
+    "aiko": 0.25,
+    "ribao": 0.15,
+    "jiro": 0.2,
+    "omakaseko": 0.1
+  }
+}
