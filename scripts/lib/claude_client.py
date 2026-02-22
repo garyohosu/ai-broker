@@ -1,5 +1,5 @@
 """
-Claude API クライアント
+OpenAI API クライアント
 エージェントのコメント生成・週次討論・取引計画生成
 """
 import os
@@ -9,7 +9,7 @@ import random
 import logging
 from pathlib import Path
 
-import anthropic
+from openai import OpenAI
 
 from .utils import ROOT
 from .portfolio import AGENT_NAMES, AGENTS
@@ -19,16 +19,16 @@ logger = logging.getLogger("ai-broker")
 AGENTS_DIR = ROOT / "agents"
 
 # 高速・低コストモデル（コメント生成用）
-FAST_MODEL = "claude-haiku-4-5-20251001"
+FAST_MODEL = "gpt-4o-mini"
 # 高品質モデル（週次討論用）
-QUALITY_MODEL = "claude-sonnet-4-6"
+QUALITY_MODEL = "gpt-4o"
 
 
-def _get_client() -> anthropic.Anthropic:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+def _get_client() -> OpenAI:
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise EnvironmentError("ANTHROPIC_API_KEY が設定されていません")
-    return anthropic.Anthropic(api_key=api_key)
+        raise EnvironmentError("OPENAI_API_KEY が設定されていません")
+    return OpenAI(api_key=api_key)
 
 
 def _load_agent_desc(agent: str) -> str:
@@ -38,18 +38,20 @@ def _load_agent_desc(agent: str) -> str:
     return f"Agent: {AGENT_NAMES.get(agent, agent)}"
 
 
-def _call(client: anthropic.Anthropic, model: str, system: str, user: str, max_tokens: int) -> str:
-    """Claude API を呼び出して応答テキストを返す"""
+def _call(client: OpenAI, model: str, system: str, user: str, max_tokens: int) -> str:
+    """OpenAI API を呼び出して応答テキストを返す"""
     try:
-        res = client.messages.create(
+        res = client.chat.completions.create(
             model=model,
             max_tokens=max_tokens,
-            system=system,
-            messages=[{"role": "user", "content": user}],
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user",   "content": user},
+            ],
         )
-        return res.content[0].text.strip()
+        return res.choices[0].message.content.strip()
     except Exception as e:
-        logger.error(f"Claude API エラー: {e}")
+        logger.error(f"OpenAI API エラー: {e}")
         return ""
 
 
