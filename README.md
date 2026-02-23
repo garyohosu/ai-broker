@@ -122,6 +122,95 @@ python scripts/run_weekend.py
 
 ---
 
+## OpenClaw cron での動かし方
+
+OpenClaw は「AI エージェントが cron でトリガーされる」仕組みです。
+cron が起動 → エージェントがメッセージを受け取る → Bash ツールでスクリプトを実行 → git push まで自動完了、という流れです。
+
+### 仕組みの概要
+
+```
+OpenClaw cron
+  └─ 指定時刻に isolated セッションを起動
+       └─ CLAUDE.md の指示 + --message の内容を受け取る
+            └─ python scripts/run_daily.py を実行
+                 └─ 価格収集 → 記事生成 → git push
+```
+
+### 前提条件
+
+1. **リポジトリをクローン**してある（例: `/home/user/ai-broker`）
+2. **依存パッケージ**をインストール済み（`pip install -r requirements.txt`）
+3. **環境変数**を設定済み
+
+```bash
+# ~/.bashrc や ~/.zshrc に追記（または OpenClaw の環境変数設定に登録）
+export OPENAI_API_KEY=sk-...
+```
+
+4. **git の認証**が済んでいる（SSH キー or HTTPS credential helper）
+
+```bash
+# SSH の場合（推奨）
+git remote set-url origin git@github.com:garyohosu/ai-broker.git
+
+# HTTPS token の場合
+git config --global credential.helper store
+```
+
+### cron ジョブの登録
+
+OpenClaw の CLI で以下を一度実行するだけです（`/path/to/ai-broker` は実際のパスに変更）。
+
+```bash
+# ① 平日ジョブ（月〜金 16:30 JST）
+openclaw cron add \
+  --name "ai-broker daily" \
+  --cron "30 16 * * 1-5" \
+  --tz "Asia/Tokyo" \
+  --session isolated \
+  --message "作業ディレクトリ /path/to/ai-broker で平日ジョブを実行してください: python scripts/run_daily.py"
+
+# ② 土曜ジョブ（土曜 21:00 JST）
+openclaw cron add \
+  --name "ai-broker weekend-sat" \
+  --cron "0 21 * * 6" \
+  --tz "Asia/Tokyo" \
+  --session isolated \
+  --message "作業ディレクトリ /path/to/ai-broker で週末ジョブを実行してください: python scripts/run_weekend.py"
+
+# ③ 日曜ジョブ（日曜 21:00 JST）
+openclaw cron add \
+  --name "ai-broker weekend-sun" \
+  --cron "0 21 * * 0" \
+  --tz "Asia/Tokyo" \
+  --session isolated \
+  --message "作業ディレクトリ /path/to/ai-broker で週次記事を確定してください: python scripts/run_weekend.py"
+```
+
+### 登録確認・管理
+
+```bash
+# 登録済みジョブ一覧
+openclaw cron list
+
+# ジョブの削除
+openclaw cron remove --name "ai-broker daily"
+```
+
+または OpenClaw に「ai-broker のcronジョブを一覧して」と話しかけても確認できます。
+
+### トラブルシューティング
+
+| 症状 | 確認箇所 |
+|---|---|
+| 記事が更新されない | `STATE/last_run.json` の `status` と `error` を確認 |
+| git push が失敗する | SSH キーまたは HTTPS token の認証設定を確認 |
+| 同日に二重実行された | `STATE/lock/YYYY-MM-DD_daily.lock` が残っていれば削除 |
+| API エラーが出る | `OPENAI_API_KEY` が正しく設定されているか確認 |
+
+---
+
 ## 取引ルール
 
 1. **対象**: 東証上場銘柄・ETF・REIT（[`data/universe/tickers.json`](data/universe/tickers.json) に記載）
