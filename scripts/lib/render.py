@@ -15,10 +15,23 @@ POSTS_DAILY_DIR  = ROOT / "docs" / "posts" / "daily"
 POSTS_WEEKLY_DIR = ROOT / "docs" / "posts" / "weekly"
 ASSETS_DIR       = ROOT / "docs" / "assets"
 
+PUB_ID = "ca-pub-6743751614716161"
+
 ADSENSE_TAG = (
-    '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
-    '?client=ca-pub-6743751614716161" crossorigin="anonymous"></script>'
+    f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+    f'?client={PUB_ID}" crossorigin="anonymous"></script>'
 )
+
+# レスポンシブ広告ユニット（記事中・記事末に挿入）
+AD_UNIT = f"""
+<div class="my-6">
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="{PUB_ID}"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({{}});</script>
+</div>"""
 
 AVATAR_URL = "https://api.dicebear.com/9.x/pixel-art/svg?seed={seed}"
 
@@ -205,6 +218,8 @@ def render_daily_post(
     </div>
   </section>
 
+  {AD_UNIT}
+
   <!-- 本日ランキング -->
   <section class="mb-8">
     <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><span>🏆</span>本日ランキング</h2>
@@ -231,6 +246,8 @@ def render_daily_post(
       {agents_html}
     </div>
   </section>
+
+  {AD_UNIT}
 
 </main>
 """ + _footer()
@@ -342,6 +359,8 @@ def render_weekly_post(
     </div>
   </section>
 
+  {AD_UNIT}
+
   <!-- 討論会 -->
   <section class="mb-8">
     <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><span>💬</span>週末討論会</h2>
@@ -368,6 +387,8 @@ def render_weekly_post(
       ⚠️ 約定は来週月曜の始値で実施します。全額を株式に投資（現金 0 円）する設定です。
     </p>
   </section>
+
+  {AD_UNIT}
 
 </main>
 """ + _footer()
