@@ -160,12 +160,20 @@ def git_push():
 
 
 def git_pull():
-    """git pull"""
-    subprocess.run(["git", "pull", "--rebase"], cwd=ROOT, check=True)
+    """git pull（unstaged changes があっても自動 stash して安全に実行）"""
+    subprocess.run(
+        ["git", "pull", "--rebase", "--autostash"],
+        cwd=ROOT, check=True,
+    )
 
 
 def git_commit_and_push(message: str):
-    """add → commit → push をまとめて実行"""
+    """add → commit → pull（リモートの差分を取り込む） → push をまとめて実行"""
     git_add_all()
     git_commit(message)
+    # 他セッションの push がある場合に備えて rebase で取り込む
+    subprocess.run(
+        ["git", "pull", "--rebase", "--autostash"],
+        cwd=ROOT, check=False,   # 失敗しても push を試みる
+    )
     git_push()
