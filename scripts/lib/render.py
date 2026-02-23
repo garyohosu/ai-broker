@@ -44,8 +44,8 @@ def _head(title: str, extra_css: str = "") -> str:
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/chat.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/chat.css">
   <style>body{{font-family:'Noto Sans JP',sans-serif;}}{extra_css}</style>
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen">
@@ -56,7 +56,7 @@ def _nav(breadcrumb: str = "") -> str:
     return f"""
 <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
   <div class="max-w-4xl mx-auto px-4 py-3 flex items-center gap-2 text-sm">
-    <a href="/" class="font-bold text-blue-600 hover:text-blue-800">🤖 ai-broker</a>
+    <a href="../../" class="font-bold text-blue-600 hover:text-blue-800">🤖 ai-broker</a>
     {f'<span class="text-gray-400">/</span><span class="text-gray-600">{breadcrumb}</span>' if breadcrumb else ''}
   </div>
 </nav>
