@@ -9,7 +9,7 @@ import random
 import logging
 from pathlib import Path
 
-from openai import OpenAI
+import openai
 
 from .utils import ROOT
 from .portfolio import AGENT_NAMES, AGENTS
@@ -24,11 +24,12 @@ FAST_MODEL = "gpt-5.2"
 QUALITY_MODEL = "gpt-5.2"
 
 
-def _get_client() -> OpenAI:
+def _get_client():
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         raise EnvironmentError("OPENAI_API_KEY が設定されていません")
-    return OpenAI(api_key=api_key)
+    openai.api_key = api_key
+    return openai
 
 
 def _load_agent_desc(agent: str) -> str:
@@ -38,18 +39,18 @@ def _load_agent_desc(agent: str) -> str:
     return f"Agent: {AGENT_NAMES.get(agent, agent)}"
 
 
-def _call(client: OpenAI, model: str, system: str, user: str, max_tokens: int) -> str:
+def _call(client, model: str, system: str, user: str, max_tokens: int) -> str:
     """OpenAI API を呼び出して応答テキストを返す"""
     try:
-        res = client.chat.completions.create(
+        response = client.Completion.create(
             model=model,
-            max_completion_tokens=max_tokens,
+            max_tokens=max_tokens,
             messages=[
                 {"role": "system", "content": system},
-                {"role": "user",   "content": user},
+                {"role": "user", "content": user},
             ],
         )
-        return res.choices[0].message.content.strip()
+        return response.choices[0].message.content.strip()
     except Exception as e:
         logger.error(f"OpenAI API エラー: {e}")
         return ""
@@ -95,11 +96,13 @@ def _fallback_comment(agent: str) -> str:
 
 # ─── 週次討論 ─────────────────────────────────────────────────────────────────
 
+from typing import List, Dict
+
 def get_weekly_discussion(
     market_context: str,
     equity_context: str,
-    universe: list[str],
-) -> list[dict]:
+    universe: List[str],
+) -> List[Dict]:
     """全エージェントの週次討論チャットログを生成する"""
     try:
         client = _get_client()
@@ -153,7 +156,7 @@ def get_weekly_discussion(
     return chat
 
 
-def _fallback_discussion() -> list[dict]:
+def _fallback_discussion() -> List[Dict]:
     return [
         {"agent": a, "name": AGENT_NAMES[a], "message": _fallback_comment(a)}
         for a in AGENTS
@@ -166,8 +169,8 @@ def get_trade_plan(
     agent: str,
     market_context: str,
     equity_context: str,
-    universe: list[str],
-) -> dict[str, float]:
+    universe: List[str],
+) -> Dict[str, float]:
     """エージェントの来週の配分計画（allocation dict）を生成する"""
     if agent == "omakaseko":
         return _random_allocation(universe)
@@ -206,7 +209,7 @@ def get_trade_plan(
     return allocation
 
 
-def _parse_allocation(text: str, valid_tickers: list[str]) -> dict[str, float]:
+def _parse_allocation(text: str, valid_tickers: List[str]) -> Dict[str, float]:
     """LLM のテキストから allocation dict を抽出・正規化する"""
     try:
         m = re.search(r'\{[^{}]*"allocation"\s*:\s*\{.*?\}[^{}]*\}', text, re.DOTALL)
@@ -236,7 +239,7 @@ def _parse_allocation(text: str, valid_tickers: list[str]) -> dict[str, float]:
         return {}
 
 
-def _random_allocation(universe: list[str], n: int = 4) -> dict[str, float]:
+def _random_allocation(universe: List[str], n: int = 4) -> Dict[str, float]:
     """ランダムに n 銘柄を選んで均等配分する"""
     picks = random.sample(universe, min(n, len(universe)))
     ratio = round(1.0 / len(picks), 4)

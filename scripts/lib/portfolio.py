@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 
 from .utils import ROOT, load_json, save_json
+from typing import List, Dict, Tuple
 
 logger = logging.getLogger("ai-broker")
 
@@ -199,7 +200,7 @@ def save_fills(date_str: str, fills: dict):
     logger.info(f"約定結果保存: {path}")
 
 
-def find_latest_plans(before_date: str) -> tuple[str, dict]:
+def find_latest_plans(before_date: str) -> Tuple[str, Dict]:
     """before_date より前の最新の plans.json を探す。(date_str, plans) を返す"""
     if not TRADES_DIR.exists():
         return "", {}

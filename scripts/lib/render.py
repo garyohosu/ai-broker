@@ -2,6 +2,7 @@
 記事（HTML）生成モジュール
 日次・週次ポストを生成して docs/posts/ に保存する
 """
+from typing import List, Dict, Tuple
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -139,10 +140,10 @@ def _agent_card(agent: str, eq: dict, comment: str) -> str:
 
 def render_daily_post(
     date_str:      str,
-    price_data:    dict,
-    equity_data:   dict,
+    price_data:    Dict,
+    equity_data:   Dict,
     news_md:       str,
-    agent_comments: dict[str, str],
+    agent_comments: Dict[str, str],
 ) -> str:
     """日次 HTML 記事を生成して返す"""
     indices     = price_data.get("indices", {})
@@ -268,9 +269,9 @@ def save_daily_post(date_str: str, html: str):
 def render_weekly_post(
     week_str:    str,
     date_str:    str,
-    chat_log:    list[dict],
-    plans:       dict,
-    weekly_pnl:  dict,
+    chat_log:    List[Dict],
+    plans:       Dict,
+    weekly_pnl:  Dict,
 ) -> str:
     """週次 HTML 記事を生成して返す"""
     # 週次ランキング
@@ -441,7 +442,7 @@ def _update_index():
 
 # ─── ヘルパー ─────────────────────────────────────────────────────────────────
 
-def _parse_news_md(md: str) -> list[str]:
+def _parse_news_md(md: str) -> List[str]:
     items = []
     for line in md.splitlines():
         line = line.strip()

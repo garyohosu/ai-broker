@@ -27,12 +27,14 @@ INDEX_SYMBOLS = {
 
 # ─── ユニバース ────────────────────────────────────────────────────────────────
 
-def get_universe() -> list[str]:
+from typing import List, Dict
+
+def get_universe() -> List[str]:
     data = load_json(UNIVERSE_FILE)
     return data.get("tickers", [])
 
 
-def get_ticker_labels() -> dict[str, str]:
+def get_ticker_labels() -> Dict[str, str]:
     data = load_json(UNIVERSE_FILE)
     return data.get("labels", {})
 
@@ -61,7 +63,7 @@ def _latest_row_before(df: pd.DataFrame, date_str: str):
     return sub.iloc[-1]
 
 
-def fetch_prices(date_str: str) -> dict[str, dict]:
+def fetch_prices(date_str: str) -> Dict[str, Dict]:
     """ユニバース全銘柄の終値などを取得して返す"""
     tickers = get_universe()
     if not tickers:
@@ -91,7 +93,7 @@ def fetch_prices(date_str: str) -> dict[str, dict]:
     return result
 
 
-def fetch_indices(date_str: str) -> dict[str, dict]:
+def fetch_indices(date_str: str) -> Dict[str, Dict]:
     """指数データを取得して返す"""
     dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
     start = (dt - datetime.timedelta(days=10)).strftime("%Y-%m-%d")
@@ -125,7 +127,7 @@ def fetch_indices(date_str: str) -> dict[str, dict]:
     return result
 
 
-def fetch_open_prices(date_str: str, tickers: list[str]) -> dict[str, float]:
+def fetch_open_prices(date_str: str, tickers: List[str]) -> Dict[str, float]:
     """指定日の始値を返す（月曜約定用）"""
     if not tickers:
         return {}
@@ -212,7 +214,7 @@ def load_news(date_str: str) -> str:
     return f"# ニュース {date_str}\n\n_（情報なし）_\n"
 
 
-def parse_news_items(news_md: str) -> list[dict]:
+def parse_news_items(news_md: str) -> List[Dict]:
     """Markdown からニュース行を抽出する（最大3件）"""
     items = []
     for line in news_md.splitlines():
