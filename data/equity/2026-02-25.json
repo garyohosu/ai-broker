@@ -1,0 +1,59 @@
+{
+  "date": "2026-02-25",
+  "agents": {
+    "taro": {
+      "name": "上昇太郎",
+      "total": 1000000.0,
+      "prev": 1000000.0,
+      "change": 0.0,
+      "change_pct": 0.0,
+      "holdings": [],
+      "cash": 1000000.0
+    },
+    "aiko": {
+      "name": "速読アイ子",
+      "total": 1000000.0,
+      "prev": 1000000.0,
+      "change": 0.0,
+      "change_pct": 0.0,
+      "holdings": [],
+      "cash": 1000000.0
+    },
+    "ribao": {
+      "name": "反町リバ男",
+      "total": 1000000.0,
+      "prev": 1000000.0,
+      "change": 0.0,
+      "change_pct": 0.0,
+      "holdings": [],
+      "cash": 1000000.0
+    },
+    "jiro": {
+      "name": "金利次郎",
+      "total": 1000000.0,
+      "prev": 1000000.0,
+      "change": 0.0,
+      "change_pct": 0.0,
+      "holdings": [],
+      "cash": 1000000.0
+    },
+    "omakaseko": {
+      "name": "運任せ子",
+      "total": 1000000.0,
+      "prev": 1000000.0,
+      "change": 0.0,
+      "change_pct": 0.0,
+      "holdings": [],
+      "cash": 1000000.0
+    },
+    "mirai": {
+      "name": "進化未来",
+      "total": 1000000.0,
+      "prev": 1000000.0,
+      "change": 0.0,
+      "change_pct": 0.0,
+      "holdings": [],
+      "cash": 1000000.0
+    }
+  }
+}
