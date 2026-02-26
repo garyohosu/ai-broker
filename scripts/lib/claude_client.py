@@ -1,15 +1,20 @@
 """
-OpenAI API クライアント
-エージェントのコメント生成・週次討論・取引計画生成
+AI クライアント（Codex CLI / Gemini CLI / OpenAI API 優先順位対応）
+
+優先順位:
+  1. codex exec  （Codex CLI 定額プラン）
+  2. gemini      （Gemini CLI 無料枠）
+  3. claude      （Claude CLI 定額プラン）
+  4. OpenAI API  （OPENAI_API_KEY 設定時のみ）
+  5. フォールバック（ハードコード）
 """
 import os
 import json
 import re
 import random
 import logging
+import subprocess
 from pathlib import Path
-
-import openai
 
 from .utils import ROOT
 from .portfolio import AGENT_NAMES, AGENTS
@@ -18,29 +23,56 @@ logger = logging.getLogger("ai-broker")
 
 AGENTS_DIR = ROOT / "agents"
 
-# 高速・低コストモデル（コメント生成用）
+# OpenAI API（コストがかかるため最後の手段）
 FAST_MODEL = "gpt-5.2"
-# 高品質モデル（週次討論用）
 QUALITY_MODEL = "gpt-5.2"
 
 
-def _get_client():
+# ─── CLI ヘルパー ─────────────────────────────────────────────────────────────
+
+def _call_cli(prompt: str, timeout: int = 180) -> str:
+    """ローカル CLI ツールで LLM を呼び出す（定額・無料枠優先）"""
+    cli_tools = [
+        ["codex", "exec", "-"],   # Codex CLI（定額プラン）
+        ["gemini"],               # Gemini CLI（無料枠）
+        ["claude", "--print"],    # Claude CLI（定額プラン）
+    ]
+    for cmd in cli_tools:
+        try:
+            result = subprocess.run(
+                cmd,
+                input=prompt,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
+            out = result.stdout.strip()
+            if result.returncode == 0 and len(out) > 50:
+                logger.info(f"[cli] ✓ {cmd[0]}: {len(out)} chars")
+                return out
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+        except Exception as e:
+            logger.debug(f"[cli] {cmd[0]}: {e}")
+            continue
+    return ""
+
+
+# ─── OpenAI API フォールバック ─────────────────────────────────────────────
+
+def _get_openai_client():
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        raise EnvironmentError("OPENAI_API_KEY が設定されていません")
-    openai.api_key = api_key
-    return openai
+        return None
+    try:
+        import openai
+        openai.api_key = api_key
+        return openai
+    except ImportError:
+        return None
 
 
-def _load_agent_desc(agent: str) -> str:
-    path = AGENTS_DIR / f"{agent}.md"
-    if path.exists():
-        return path.read_text(encoding="utf-8")
-    return f"Agent: {AGENT_NAMES.get(agent, agent)}"
-
-
-def _call(client, model: str, system: str, user: str, max_tokens: int) -> str:
-    """OpenAI API を呼び出して応答テキストを返す"""
+def _call_openai(client, model: str, system: str, user: str, max_tokens: int) -> str:
     try:
         response = client.Completion.create(
             model=model,
@@ -56,29 +88,47 @@ def _call(client, model: str, system: str, user: str, max_tokens: int) -> str:
         return ""
 
 
+def _call(system: str, user: str, max_tokens: int = 300) -> str:
+    """CLI → OpenAI API → 空文字 の順で試みる"""
+    prompt = f"{system}\n\n{user}"
+    # 1. CLI ツール
+    result = _call_cli(prompt)
+    if result:
+        return result
+    # 2. OpenAI API（コスト発生）
+    client = _get_openai_client()
+    if client:
+        return _call_openai(client, FAST_MODEL, system, user, max_tokens)
+    return ""
+
+
+# ─── エージェント設定 ─────────────────────────────────────────────────────
+
+def _load_agent_desc(agent: str) -> str:
+    path = AGENTS_DIR / f"{agent}.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+    return f"Agent: {AGENT_NAMES.get(agent, agent)}"
+
+
 # ─── 日次コメント ─────────────────────────────────────────────────────────────
 
 def get_daily_comment(agent: str, market_context: str) -> str:
     """エージェントの日次一言コメントを生成する"""
-    try:
-        client = _get_client()
-    except EnvironmentError:
-        return _fallback_comment(agent)
-
     name = AGENT_NAMES.get(agent, agent)
     desc = _load_agent_desc(agent)
 
     system = (
         f"あなたは仮想の株式投資AIエージェント「{name}」です。\n"
         f"{desc}\n\n"
-        "一人称（「私は〜」「俺は〜」「私が〜」など自分のキャラに合わせた一人称）で話してください。"
+        "一人称で話してください。"
     )
     user = (
         f"今日の市場状況:\n{market_context}\n\n"
         "自分の戦略目線で今日の一言コメントを50字以内で述べてください。"
     )
 
-    text = _call(client, FAST_MODEL, system, user, 150)
+    text = _call(system, user, 150)
     return text or _fallback_comment(agent)
 
 
@@ -104,11 +154,6 @@ def get_weekly_discussion(
     universe: List[str],
 ) -> List[Dict]:
     """全エージェントの週次討論チャットログを生成する"""
-    try:
-        client = _get_client()
-    except EnvironmentError:
-        return _fallback_discussion()
-
     chat = []
     discussion_agents = ["taro", "aiko", "ribao", "jiro", "omakaseko"]
 
@@ -128,7 +173,7 @@ def get_weekly_discussion(
             "来週の戦略を述べてください。"
         )
 
-        text = _call(client, FAST_MODEL, system, user, 250)
+        text = _call(system, user, 250)
         chat.append({
             "agent":   agent,
             "name":    name,
@@ -146,7 +191,7 @@ def get_weekly_discussion(
         f"各エージェントの発言:\n{mirai_context}\n\n"
         "データドリブンな視点で来週の展望を100字程度でまとめてください。"
     )
-    mirai_text = _call(client, FAST_MODEL, mirai_system, mirai_user, 250)
+    mirai_text = _call(mirai_system, mirai_user, 250)
     chat.append({
         "agent":   "mirai",
         "name":    AGENT_NAMES["mirai"],
@@ -175,11 +220,6 @@ def get_trade_plan(
     if agent == "omakaseko":
         return _random_allocation(universe)
 
-    try:
-        client = _get_client()
-    except EnvironmentError:
-        return _random_allocation(universe)
-
     name = AGENT_NAMES.get(agent, agent)
     desc = _load_agent_desc(agent)
     universe_sample = universe[:20]
@@ -190,7 +230,7 @@ def get_trade_plan(
         f"{desc}\n\n"
         "来週の配分を決めてください。\n"
         "必ず以下のJSON形式のみで回答してください（前後に余計なテキスト不要）:\n"
-        '{"allocation": {"ティッカー": 比率, ...}}\n'
+        '{\"allocation\": {\"ティッカー\": 比率, ...}}\n'
         "比率の合計は 1.0 にしてください。東証銘柄（.T で終わるもの）のみ使用してください。"
     )
     user = (
@@ -200,7 +240,7 @@ def get_trade_plan(
         "来週の配分を JSON で回答してください。"
     )
 
-    text = _call(client, FAST_MODEL, system, user, 400)
+    text = _call(system, user, 400)
     allocation = _parse_allocation(text, universe)
 
     if not allocation:
@@ -221,7 +261,6 @@ def _parse_allocation(text: str, valid_tickers: List[str]) -> Dict[str, float]:
         parsed = json.loads(m.group())
         raw = parsed.get("allocation", parsed)
 
-        # 有効な銘柄のみ残す
         filtered = {
             k: float(v)
             for k, v in raw.items()
@@ -230,7 +269,6 @@ def _parse_allocation(text: str, valid_tickers: List[str]) -> Dict[str, float]:
         if not filtered:
             return {}
 
-        # 正規化
         total = sum(filtered.values())
         return {k: round(v / total, 4) for k, v in filtered.items()}
 
@@ -243,7 +281,6 @@ def _random_allocation(universe: List[str], n: int = 4) -> Dict[str, float]:
     """ランダムに n 銘柄を選んで均等配分する"""
     picks = random.sample(universe, min(n, len(universe)))
     ratio = round(1.0 / len(picks), 4)
-    # 端数調整
     alloc = {t: ratio for t in picks}
     alloc[picks[-1]] = round(1.0 - ratio * (len(picks) - 1), 4)
     return alloc
