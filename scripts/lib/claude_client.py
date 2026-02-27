@@ -395,6 +395,9 @@ def get_daily_column(
                 result["body"] = parsed["body"]
     except Exception as e:
         logger.warning(f"コラムパース失敗: {e}")
+
+    # JSON抽出に失敗した場合でも、本文が空なら必ずフォールバックを入れる
+    if not result.get("body"):
         result["body"] = text[:450] if text else f"{name}が今日の市場を分析中..."
 
     logger.info(f"コラム生成: {result['title']}")
@@ -443,6 +446,14 @@ def analyze_news_impact(
                     selected.append(item)
     except Exception as e:
         logger.warning(f"ニュース分析パース失敗: {e} / text={text[:200]}")
+
+    # AI選別に失敗した場合、ニュース0件を避けるため先頭3件を中立でフォールバック採用
+    if not selected and news_items:
+        for item in news_items[:3]:
+            fallback = dict(item)
+            fallback["impact"] = "中立：AI選別失敗のため暫定採用"
+            selected.append(fallback)
+        logger.warning("ニュース分析フォールバック: 先頭3件を暫定採用")
 
     logger.info(f"ニュース分析: {len(selected)} 件を選出")
     return selected
