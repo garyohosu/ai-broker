@@ -91,10 +91,10 @@ def _call_codex_cli(prompt: str, timeout: int = 240) -> str:
 
         if output_file and os.path.exists(output_file):
             out = Path(output_file).read_text(encoding="utf-8").strip()
-            if len(out) > 20:
+            if out:
                 logger.info(f"[cli] ✓ codex exec: {len(out)} chars")
                 return out
-            logger.debug(f"[cli] codex exec: short output len={len(out)}")
+            logger.debug("[cli] codex exec: empty output")
     except FileNotFoundError:
         pass
     except subprocess.TimeoutExpired:
