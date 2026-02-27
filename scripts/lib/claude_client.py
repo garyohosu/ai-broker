@@ -66,28 +66,7 @@ def _call_anthropic(client, system: str, user: str, max_tokens: int) -> str:
 # ─── CLI フォールバック ───────────────────────────────────────────────────────
 
 def _call_codex_cli(prompt: str, timeout: int = 240) -> str:
-    """Codex CLI で LLM を呼び出す（-p優先、失敗時は exec フォールバック）"""
-    # 1) 軽量: codex -p
-    try:
-        result = subprocess.run(
-            ["codex", "-p", prompt],
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-        )
-        out = result.stdout.strip()
-        if result.returncode == 0 and len(out) > 20:
-            logger.info(f"[cli] ✓ codex -p: {len(out)} chars")
-            return out
-        logger.debug(f"[cli] codex -p: returncode={result.returncode}, len={len(out)}")
-    except FileNotFoundError:
-        pass
-    except subprocess.TimeoutExpired:
-        logger.warning("[cli] codex -p: timeout")
-    except Exception as e:
-        logger.debug(f"[cli] codex -p: {e}")
-
-    # 2) フォールバック: codex exec --output-last-message
+    """Codex CLI で LLM を呼び出す（non-interactive: codex exec）"""
     output_file = None
     try:
         with tempfile.NamedTemporaryFile(prefix="codex_out_", suffix=".txt", delete=False) as tf:
