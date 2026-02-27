@@ -1,11 +1,12 @@
 """
-AI クライアント（Anthropic SDK 優先、CLI / OpenAI API フォールバック）
+AI クライアント（Anthropic SDK 優先、Codex CLI / OpenAI API フォールバック）
 
 優先順位:
   1. Anthropic API  （ANTHROPIC_API_KEY 設定時）
-  2. gemini CLI     （gemini -p）
+  2. Codex CLI      （codex exec）
   3. OpenAI API     （OPENAI_API_KEY 設定時）
-  4. フォールバック（ハードコード）
+  4. gemini CLI     （gemini -p）
+  5. フォールバック（ハードコード）
 """
 import os
 import json
@@ -13,6 +14,7 @@ import re
 import random
 import logging
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import List, Dict
 
@@ -63,8 +65,53 @@ def _call_anthropic(client, system: str, user: str, max_tokens: int) -> str:
 
 # ─── CLI フォールバック ───────────────────────────────────────────────────────
 
+def _call_codex_cli(prompt: str, timeout: int = 240) -> str:
+    """Codex CLI で LLM を呼び出す（output-last-message を利用）"""
+    output_file = None
+    try:
+        with tempfile.NamedTemporaryFile(prefix="codex_out_", suffix=".txt", delete=False) as tf:
+            output_file = tf.name
+
+        result = subprocess.run(
+            [
+                "codex", "exec",
+                "--sandbox", "read-only",
+                "--output-last-message", output_file,
+                "-",
+            ],
+            input=prompt,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+
+        if result.returncode != 0:
+            logger.debug(f"[cli] codex: returncode={result.returncode}")
+            return ""
+
+        if output_file and os.path.exists(output_file):
+            out = Path(output_file).read_text(encoding="utf-8").strip()
+            if len(out) > 20:
+                logger.info(f"[cli] ✓ codex: {len(out)} chars")
+                return out
+            logger.debug(f"[cli] codex: short output len={len(out)}")
+    except FileNotFoundError:
+        pass
+    except subprocess.TimeoutExpired:
+        logger.warning("[cli] codex: timeout")
+    except Exception as e:
+        logger.debug(f"[cli] codex: {e}")
+    finally:
+        if output_file and os.path.exists(output_file):
+            try:
+                os.remove(output_file)
+            except Exception:
+                pass
+    return ""
+
+
 def _call_cli(prompt: str, timeout: int = 180) -> str:
-    """gemini CLI で LLM を呼び出す"""
+    """gemini CLI で LLM を呼び出す（最終フォールバック）"""
     try:
         result = subprocess.run(
             ["gemini", "-p", prompt],
@@ -116,21 +163,31 @@ def _call_openai(client, system: str, user: str, max_tokens: int) -> str:
 
 
 def _call(system: str, user: str, max_tokens: int = 300) -> str:
-    """Anthropic API → gemini CLI → OpenAI API → 空文字 の順で試みる"""
+    """Anthropic API → Codex CLI → OpenAI API → gemini CLI → 空文字 の順で試みる"""
     # 1. Anthropic API（最優先）
     ac = _get_anthropic_client()
     if ac:
         result = _call_anthropic(ac, system, user, max_tokens)
         if result:
             return result
-    # 2. gemini CLI
-    result = _call_cli(f"{system}\n\n{user}")
+
+    # 2. Codex CLI
+    result = _call_codex_cli(f"{system}\n\n{user}")
     if result:
         return result
+
     # 3. OpenAI API
     oc = _get_openai_client()
     if oc:
-        return _call_openai(oc, system, user, max_tokens)
+        result = _call_openai(oc, system, user, max_tokens)
+        if result:
+            return result
+
+    # 4. gemini CLI（最終フォールバック）
+    result = _call_cli(f"{system}\n\n{user}")
+    if result:
+        return result
+
     return ""
 
 
