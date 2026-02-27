@@ -111,6 +111,33 @@ def _index_card(name: str, data: dict) -> str:
     </div>"""
 
 
+def _column_section(column: Dict) -> str:
+    agent    = column.get("agent", "")
+    name     = column.get("columnist", "")
+    title    = column.get("title", "今日のコラム")
+    body     = column.get("body", "").replace("\n", "<br>")
+    color    = AGENT_COLORS.get(agent, "#6b7280")
+    avatar   = AVATAR_URL.format(seed=agent)
+    return f"""
+  <section class="mb-8">
+    <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><span>✍️</span>今日のコラム</h2>
+    <div class="bg-white rounded-2xl shadow-md overflow-hidden" style="border:2px solid {color}">
+      <div class="flex items-center gap-3 px-5 py-3" style="background:color-mix(in srgb,{color} 12%,white)">
+        <img src="{avatar}" alt="{name}" class="w-12 h-12 rounded-full border-2 flex-shrink-0" style="border-color:{color}">
+        <div>
+          <div class="font-bold" style="color:{color}">{name}</div>
+          <div class="text-xs text-gray-400">担当コラムニスト</div>
+        </div>
+        <span class="ml-auto text-xs font-semibold px-2 py-1 rounded-full text-white" style="background:{color}">今日の担当</span>
+      </div>
+      <div class="px-6 py-5">
+        <h3 class="text-xl font-bold mb-4 leading-snug" style="color:{color}">「{title}」</h3>
+        <p class="text-gray-700 leading-relaxed text-sm whitespace-pre-line">{body}</p>
+      </div>
+    </div>
+  </section>"""
+
+
 def _agent_card(agent: str, eq: dict, comment: str) -> str:
     name    = eq.get("name", AGENT_NAMES.get(agent, agent))
     total   = eq.get("total",      INITIAL_CASH)
@@ -144,6 +171,7 @@ def render_daily_post(
     equity_data:   Dict,
     news_md:       str,
     agent_comments: Dict[str, str],
+    column:        Dict = None,
 ) -> str:
     """日次 HTML 記事を生成して返す"""
     indices     = price_data.get("indices", {})
@@ -197,6 +225,8 @@ def render_daily_post(
         <td class="py-2 px-3 text-right {clr} font-mono">{sign}{pct:.2f}%</td>
       </tr>"""
 
+    column_html = _column_section(column) if column and column.get("body") else ""
+
     html = _head(date_str, "") + _nav("日次レポート") + f"""
 <main class="max-w-4xl mx-auto px-4 py-8">
 
@@ -211,6 +241,11 @@ def render_daily_post(
     </div>
   </section>
 
+  <!-- 今日のコラム -->
+  {column_html}
+
+  {AD_UNIT}
+
   <!-- 重要材料 -->
   <section class="mb-8">
     <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><span>📰</span>重要材料（最大3件）</h2>
@@ -218,8 +253,6 @@ def render_daily_post(
       <ul>{news_html}</ul>
     </div>
   </section>
-
-  {AD_UNIT}
 
   <!-- 本日ランキング -->
   <section class="mb-8">

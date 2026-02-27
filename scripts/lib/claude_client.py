@@ -1,12 +1,11 @@
 """
-AI クライアント（Codex CLI / Gemini CLI / OpenAI API 優先順位対応）
+AI クライアント（Anthropic SDK 優先、CLI / OpenAI API フォールバック）
 
 優先順位:
-  1. codex exec  （Codex CLI 定額プラン）
-  2. gemini      （Gemini CLI 無料枠）
-  3. claude      （Claude CLI 定額プラン）
-  4. OpenAI API  （OPENAI_API_KEY 設定時のみ）
-  5. フォールバック（ハードコード）
+  1. Anthropic API  （ANTHROPIC_API_KEY 設定時）
+  2. gemini CLI     （gemini -p）
+  3. OpenAI API     （OPENAI_API_KEY 設定時）
+  4. フォールバック（ハードコード）
 """
 import os
 import json
@@ -15,6 +14,7 @@ import random
 import logging
 import subprocess
 from pathlib import Path
+from typing import List, Dict
 
 from .utils import ROOT
 from .portfolio import AGENT_NAMES, AGENTS
@@ -23,38 +23,66 @@ logger = logging.getLogger("ai-broker")
 
 AGENTS_DIR = ROOT / "agents"
 
-# OpenAI API（コストがかかるため最後の手段）
-FAST_MODEL = "gpt-5.2"
-QUALITY_MODEL = "gpt-5.2"
+# モデル設定
+ANTHROPIC_MODEL = "claude-opus-4-6"
+OPENAI_MODEL    = "gpt-4o"
 
 
-# ─── CLI ヘルパー ─────────────────────────────────────────────────────────────
+# ─── Anthropic SDK ────────────────────────────────────────────────────────────
+
+def _get_anthropic_client():
+    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return None
+    try:
+        import anthropic
+        return anthropic.Anthropic(api_key=api_key)
+    except ImportError:
+        return None
+
+
+def _call_anthropic(client, system: str, user: str, max_tokens: int) -> str:
+    try:
+        import anthropic as _anthropic
+        with client.messages.stream(
+            model=ANTHROPIC_MODEL,
+            max_tokens=max(max_tokens, 1024),
+            thinking={"type": "adaptive"},
+            system=system,
+            messages=[{"role": "user", "content": user}],
+        ) as stream:
+            response = stream.get_final_message()
+        text_blocks = [b.text for b in response.content if b.type == "text"]
+        result = "\n".join(text_blocks).strip()
+        logger.info(f"[anthropic] ✓ {len(result)} chars (tokens: {response.usage.output_tokens})")
+        return result
+    except Exception as e:
+        logger.error(f"Anthropic API エラー: {e}")
+        return ""
+
+
+# ─── CLI フォールバック ───────────────────────────────────────────────────────
 
 def _call_cli(prompt: str, timeout: int = 180) -> str:
-    """ローカル CLI ツールで LLM を呼び出す（定額・無料枠優先）"""
-    cli_tools = [
-        ["codex", "exec", "-"],   # Codex CLI（定額プラン）
-        ["gemini"],               # Gemini CLI（無料枠）
-        ["claude", "--print"],    # Claude CLI（定額プラン）
-    ]
-    for cmd in cli_tools:
-        try:
-            result = subprocess.run(
-                cmd,
-                input=prompt,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
-            )
-            out = result.stdout.strip()
-            if result.returncode == 0 and len(out) > 50:
-                logger.info(f"[cli] ✓ {cmd[0]}: {len(out)} chars")
-                return out
-        except (FileNotFoundError, subprocess.TimeoutExpired):
-            continue
-        except Exception as e:
-            logger.debug(f"[cli] {cmd[0]}: {e}")
-            continue
+    """gemini CLI で LLM を呼び出す"""
+    try:
+        result = subprocess.run(
+            ["gemini", "-p", prompt],
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+        out = result.stdout.strip()
+        if result.returncode == 0 and len(out) > 20:
+            logger.info(f"[cli] ✓ gemini: {len(out)} chars")
+            return out
+        logger.debug(f"[cli] gemini: returncode={result.returncode}, len={len(out)}")
+    except FileNotFoundError:
+        pass
+    except subprocess.TimeoutExpired:
+        logger.warning("[cli] gemini: timeout")
+    except Exception as e:
+        logger.debug(f"[cli] gemini: {e}")
     return ""
 
 
@@ -65,18 +93,17 @@ def _get_openai_client():
     if not api_key:
         return None
     try:
-        import openai
-        openai.api_key = api_key
-        return openai
+        from openai import OpenAI
+        return OpenAI(api_key=api_key)
     except ImportError:
         return None
 
 
-def _call_openai(client, model: str, system: str, user: str, max_tokens: int) -> str:
+def _call_openai(client, system: str, user: str, max_tokens: int) -> str:
     try:
-        response = client.Completion.create(
-            model=model,
-            max_tokens=max_tokens,
+        response = client.chat.completions.create(
+            model=OPENAI_MODEL,
+            max_completion_tokens=max_tokens,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -89,16 +116,21 @@ def _call_openai(client, model: str, system: str, user: str, max_tokens: int) ->
 
 
 def _call(system: str, user: str, max_tokens: int = 300) -> str:
-    """CLI → OpenAI API → 空文字 の順で試みる"""
-    prompt = f"{system}\n\n{user}"
-    # 1. CLI ツール
-    result = _call_cli(prompt)
+    """Anthropic API → gemini CLI → OpenAI API → 空文字 の順で試みる"""
+    # 1. Anthropic API（最優先）
+    ac = _get_anthropic_client()
+    if ac:
+        result = _call_anthropic(ac, system, user, max_tokens)
+        if result:
+            return result
+    # 2. gemini CLI
+    result = _call_cli(f"{system}\n\n{user}")
     if result:
         return result
-    # 2. OpenAI API（コスト発生）
-    client = _get_openai_client()
-    if client:
-        return _call_openai(client, FAST_MODEL, system, user, max_tokens)
+    # 3. OpenAI API
+    oc = _get_openai_client()
+    if oc:
+        return _call_openai(oc, system, user, max_tokens)
     return ""
 
 
@@ -113,8 +145,52 @@ def _load_agent_desc(agent: str) -> str:
 
 # ─── 日次コメント ─────────────────────────────────────────────────────────────
 
+def get_all_daily_comments(market_context: str) -> Dict[str, str]:
+    """全エージェントの日次コメントを1回のLLM呼び出しでまとめて生成する"""
+    agents_profiles = "\n\n".join(
+        f"【{AGENT_NAMES[a]}（{a}）】\n{_load_agent_desc(a)[:300]}"
+        for a in AGENTS
+    )
+
+    system = (
+        "以下の6人の仮想株式投資AIエージェントそれぞれの視点から、"
+        "今日の市場状況に対する一言コメント（40〜80字）を生成してください。\n"
+        "各自のキャラクターと戦略に忠実に、一人称で話してください。\n\n"
+        "必ず以下のJSON形式のみで回答してください（前後に余計なテキスト不要）:\n"
+        '{"taro":"コメント","aiko":"コメント","ribao":"コメント",'
+        '"jiro":"コメント","omakaseko":"コメント","mirai":"コメント"}'
+    )
+    user = (
+        f"今日の市場状況:\n{market_context}\n\n"
+        f"各エージェントのキャラクター:\n{agents_profiles}\n\n"
+        "全員分のコメントをJSONで回答してください。"
+    )
+
+    text = _call(system, user, 800)
+    result: Dict[str, str] = {}
+    try:
+        m = re.search(r'\{[^{}]*\}', text, re.DOTALL)
+        if m:
+            parsed = json.loads(m.group())
+            for agent in AGENTS:
+                comment = str(parsed.get(agent, "")).strip()
+                if comment:
+                    result[agent] = comment
+    except Exception as e:
+        logger.warning(f"一括コメントパース失敗: {e} / text={text[:200]}")
+
+    # 取得できなかったエージェントはフォールバック
+    for agent in AGENTS:
+        if agent not in result:
+            logger.debug(f"フォールバック: {agent}")
+            result[agent] = _fallback_comment(agent)
+
+    logger.info(f"コメント生成: {sum(1 for a in AGENTS if result.get(a) != _fallback_comment(a))}/{len(AGENTS)} 人がLLM生成")
+    return result
+
+
 def get_daily_comment(agent: str, market_context: str) -> str:
-    """エージェントの日次一言コメントを生成する"""
+    """エージェントの日次一言コメントを生成する（後方互換用）"""
     name = AGENT_NAMES.get(agent, agent)
     desc = _load_agent_desc(agent)
 
@@ -145,8 +221,6 @@ def _fallback_comment(agent: str) -> str:
 
 
 # ─── 週次討論 ─────────────────────────────────────────────────────────────────
-
-from typing import List, Dict
 
 def get_weekly_discussion(
     market_context: str,
@@ -199,6 +273,122 @@ def get_weekly_discussion(
     })
 
     return chat
+
+
+def get_daily_column(
+    agent: str,
+    market_context: str,
+    news_items: List[str],
+    equity_data: dict,
+) -> Dict:
+    """指定エージェントが今日の読み物コラムを執筆する"""
+    name = AGENT_NAMES.get(agent, agent)
+    desc = _load_agent_desc(agent)
+
+    # 順位情報
+    agents_sorted = sorted(
+        AGENTS,
+        key=lambda a: equity_data.get("agents", {}).get(a, {}).get("total", 0),
+        reverse=True,
+    )
+    ranking_str = "　".join(
+        f"{i+1}位:{AGENT_NAMES.get(a, a)}"
+        for i, a in enumerate(agents_sorted)
+    )
+    my_eq     = equity_data.get("agents", {}).get(agent, {})
+    my_total  = my_eq.get("total",      1_000_000)
+    my_change = my_eq.get("change",     0)
+    my_pct    = my_eq.get("change_pct", 0)
+    my_rank   = (agents_sorted.index(agent) + 1) if agent in agents_sorted else "?"
+    sign      = "+" if my_change >= 0 else ""
+
+    news_str = "\n".join(f"- {n}" for n in news_items[:3]) or "（本日のニュースなし）"
+
+    system = (
+        f"あなたは仮想の株式投資AIエージェント「{name}」です。\n"
+        f"{desc}\n\n"
+        "今日の市場について、ブログのコラムを書いてください。\n"
+        "条件:\n"
+        "・一人称で話し、自分のキャラクターと投資哲学を全開にすること\n"
+        "・今日の具体的な市場データやニュースに必ず言及すること\n"
+        "・読者が「明日もまた読みたい」と思うような面白さ・毒気・温かみを入れること\n"
+        "・他のエージェントへのライバル意識や自分の順位への一言があるとなお良い\n"
+        "・必ず以下のJSON形式のみで回答してください:\n"
+        '{"title": "コラムタイトル（25字以内）", "body": "本文（250〜450字）"}'
+    )
+    user = (
+        f"今日の市場:\n{market_context}\n\n"
+        f"今日の重要ニュース:\n{news_str}\n\n"
+        f"現在の順位: {ranking_str}\n"
+        f"自分の今日の成績: {my_rank}位　¥{int(my_total):,}"
+        f"（前日比 {sign}{int(my_change):,}円 / {sign}{my_pct:.2f}%）\n\n"
+        "今日のコラムをJSONで書いてください。"
+    )
+
+    text = _call(system, user, 800)
+    result: Dict = {"agent": agent, "columnist": name,
+                    "title": f"{name}の今日の一言", "body": ""}
+    try:
+        m = re.search(r'\{[^{}]*\}', text, re.DOTALL)
+        if m:
+            parsed = json.loads(m.group())
+            if parsed.get("title"):
+                result["title"] = parsed["title"]
+            if parsed.get("body"):
+                result["body"] = parsed["body"]
+    except Exception as e:
+        logger.warning(f"コラムパース失敗: {e}")
+        result["body"] = text[:450] if text else f"{name}が今日の市場を分析中..."
+
+    logger.info(f"コラム生成: {result['title']}")
+    return result
+
+
+def analyze_news_impact(
+    news_items: List[Dict],
+    market_context: str,
+) -> List[Dict]:
+    """ニュース一覧からAIが株価影響の大きい上位3件を選んで返す"""
+    if not news_items:
+        return []
+
+    news_text = "\n".join(
+        f"{i+1}. {item['title']}（{item.get('publisher', '')}）"
+        f" 関連: {', '.join(item.get('related_tickers', []))}"
+        for i, item in enumerate(news_items[:40])
+    )
+
+    system = (
+        "あなたは東京証券取引所の株式アナリストです。\n"
+        "以下のニュースから株価に最も影響を与えそうな重要ニュースを最大3件選び、"
+        "各ニュースの影響度を判断してください。\n\n"
+        "必ず以下のJSON形式のみで回答してください（前後に余計なテキスト不要）:\n"
+        '[{"index": 番号, "impact_type": "買い材料/売り材料/中立", "reason": "理由30字以内"}]'
+    )
+    user = (
+        f"市場状況:\n{market_context}\n\n"
+        f"ニュース一覧:\n{news_text}\n\n"
+        "最大3件を選んでJSONで回答してください。"
+    )
+
+    text = _call(system, user, 500)
+    selected: List[Dict] = []
+    try:
+        m = re.search(r'\[.*?\]', text, re.DOTALL)
+        if m:
+            for entry in json.loads(m.group())[:3]:
+                idx = int(entry.get("index", 0)) - 1
+                if 0 <= idx < len(news_items):
+                    item = dict(news_items[idx])
+                    impact_type = entry.get("impact_type", "")
+                    reason      = entry.get("reason", "")
+                    item["impact"] = f"{impact_type}：{reason}" if reason else impact_type
+                    selected.append(item)
+    except Exception as e:
+        logger.warning(f"ニュース分析パース失敗: {e} / text={text[:200]}")
+
+    logger.info(f"ニュース分析: {len(selected)} 件を選出")
+    return selected
 
 
 def _fallback_discussion() -> List[Dict]:

@@ -5,6 +5,7 @@
 実行: python scripts/run_daily.py [--date YYYY-MM-DD] [--dry-run]
 """
 import sys
+import hashlib
 import argparse
 import datetime
 from pathlib import Path
@@ -19,14 +20,14 @@ from lib.utils import (
 )
 from lib.market import (
     fetch_prices, fetch_indices, fetch_open_prices,
-    save_prices, save_macro, create_news_placeholder, load_news,
+    save_prices, save_macro, fetch_news, save_news, create_news_placeholder, load_news,
 )
 from lib.portfolio import (
-    AGENTS, compute_all_equity, load_equity,
+    AGENTS, AGENT_NAMES, compute_all_equity, load_equity,
     find_latest_plans, calculate_fills, apply_fills_to_portfolio,
     save_fills,
 )
-from lib.claude_client import get_daily_comment
+from lib.claude_client import get_all_daily_comments, analyze_news_impact, get_daily_column
 from lib.render import render_daily_post, save_daily_post
 
 logger = setup_logging()
@@ -78,8 +79,16 @@ def run(date_str: str, dry_run: bool = False):
         save_prices(date_str, prices, indices)
         save_macro(date_str, indices)
 
-        # ─── ニュースファイル確保 ──────────────────────────────────
-        create_news_placeholder(date_str)
+        # ─── ニュース取得・AI分析 ──────────────────────────────────
+        logger.info("ニュース取得中...")
+        raw_news = fetch_news(date_str)
+        if raw_news:
+            market_ctx_for_news = build_market_context(date_str, {"prices": prices, "indices": indices}, {})
+            logger.info("ニュースのAI分析中...")
+            analyzed_news = analyze_news_impact(raw_news, market_ctx_for_news)
+            save_news(date_str, analyzed_news)
+        else:
+            create_news_placeholder(date_str)
         news_md = load_news(date_str)
 
         # ─── 月曜：約定処理 ───────────────────────────────────────
@@ -122,19 +131,24 @@ def run(date_str: str, dry_run: bool = False):
         price_data  = {"prices": prices, "indices": indices}
         equity_data = compute_all_equity(date_str, price_data, prev_biz)
 
-        # ─── エージェントコメント生成 ─────────────────────────────
+        # ─── エージェントコメント生成（全員を1回のLLMで生成）─────
         logger.info("エージェントコメント生成中...")
-        prev_equity     = load_equity(prev_biz)
-        market_ctx      = build_market_context(date_str, price_data, prev_equity)
-        agent_comments  = {}
-        for agent in AGENTS:
-            comment = get_daily_comment(agent, market_ctx)
-            agent_comments[agent] = comment
+        prev_equity    = load_equity(prev_biz)
+        market_ctx     = build_market_context(date_str, price_data, prev_equity)
+        agent_comments = get_all_daily_comments(market_ctx)
+        for agent, comment in agent_comments.items():
             logger.info(f"  {agent}: {comment[:40]}...")
+
+        # ─── 今日のコラム担当を選出・生成 ────────────────────────
+        columnist_idx   = int(hashlib.md5(date_str.encode()).hexdigest(), 16) % len(AGENTS)
+        columnist_agent = AGENTS[columnist_idx]
+        logger.info(f"今日のコラム担当: {AGENT_NAMES.get(columnist_agent, columnist_agent)}")
+        news_lines = [l[2:].strip() for l in news_md.splitlines() if l.startswith("- ")]
+        column = get_daily_column(columnist_agent, market_ctx, news_lines, equity_data)
 
         # ─── 日次記事生成 ─────────────────────────────────────────
         logger.info("日次記事生成中...")
-        html = render_daily_post(date_str, price_data, equity_data, news_md, agent_comments)
+        html = render_daily_post(date_str, price_data, equity_data, news_md, agent_comments, column)
         save_daily_post(date_str, html)
 
         # ─── commit & push ────────────────────────────────────────

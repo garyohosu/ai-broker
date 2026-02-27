@@ -193,6 +193,86 @@ def save_macro(date_str: str, indices: dict):
 
 # ─── ニュース ─────────────────────────────────────────────────────────────────
 
+def _parse_yf_news_item(item: dict, fallback_ticker: str) -> Dict:
+    """yfinance ニュースアイテムを正規化する（新旧API両対応）"""
+    # yfinance 0.2.x 以降: item = {"id": ..., "content": {...}}
+    content = item.get("content")
+    if content:
+        title     = content.get("title", "").strip()
+        pub_str   = content.get("pubDate") or content.get("displayTime", "")
+        publisher = (content.get("provider") or {}).get("displayName", "")
+        link      = (content.get("clickThroughUrl") or {}).get("url", "")
+        try:
+            pub_dt = datetime.datetime.fromisoformat(pub_str.replace("Z", "+00:00"))
+            pub_ts = pub_dt.timestamp()
+            pub_at = pub_dt.strftime("%Y-%m-%d %H:%M")
+        except Exception:
+            pub_ts = 0
+            pub_at = ""
+        return {"title": title, "publisher": publisher, "link": link,
+                "published_at": pub_at, "pub_ts": pub_ts,
+                "related_tickers": [fallback_ticker]}
+    # 旧API: item = {"title": ..., "providerPublishTime": ..., ...}
+    title   = item.get("title", "").strip()
+    pub_ts  = float(item.get("providerPublishTime", 0))
+    pub_at  = datetime.datetime.fromtimestamp(pub_ts).strftime("%Y-%m-%d %H:%M") if pub_ts else ""
+    return {"title": title, "publisher": item.get("publisher", ""),
+            "link": item.get("link", ""), "published_at": pub_at, "pub_ts": pub_ts,
+            "related_tickers": item.get("relatedTickers", [fallback_ticker])}
+
+
+def fetch_news(date_str: str) -> List[Dict]:
+    """ユニバース銘柄のニュースを yfinance で取得して返す（重複排除済み）"""
+    tickers = get_universe()
+    dt      = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+    cutoff  = (dt - datetime.timedelta(days=2)).timestamp()   # 直近2日
+
+    seen_titles: set = set()
+    all_news:    List[Dict] = []
+
+    for ticker in tickers:
+        try:
+            news = yf.Ticker(ticker).news or []
+            for raw in news:
+                parsed = _parse_yf_news_item(raw, ticker)
+                title  = parsed["title"]
+                if not title or title in seen_titles:
+                    continue
+                if parsed["pub_ts"] < cutoff:
+                    continue
+                seen_titles.add(title)
+                all_news.append(parsed)
+        except Exception as e:
+            logger.debug(f"ニュース取得エラー {ticker}: {e}")
+
+    logger.info(f"ニュース取得: {len(all_news)} 件")
+    return all_news
+
+
+def save_news(date_str: str, analyzed_items: List[Dict]):
+    """AI分析済みニュースを data/news/YYYY-MM-DD.md に保存"""
+    path = NEWS_DIR / f"{date_str}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    lines = [f"# ニュース {date_str}\n"]
+    if analyzed_items:
+        for item in analyzed_items:
+            title     = item.get("title", "")
+            publisher = item.get("publisher", "")
+            link      = item.get("link", "")
+            impact    = item.get("impact", "")
+            src       = f"（{publisher}）" if publisher else ""
+            link_part = f" [{link}]" if link else ""
+            lines.append(f"- {title}{src}{link_part}")
+            if impact:
+                lines.append(f"  - 株価影響: {impact}")
+    else:
+        lines.append("_（本日の重要材料は収集できませんでした）_")
+
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    logger.info(f"ニュース保存: {path} ({len(analyzed_items)} 件)")
+
+
 def create_news_placeholder(date_str: str):
     """ニュースファイルが存在しない場合にプレースホルダを作成"""
     path = NEWS_DIR / f"{date_str}.md"
