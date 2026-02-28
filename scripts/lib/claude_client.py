@@ -1,11 +1,12 @@
 """
-AI クライアント（Anthropic SDK 優先、Codex CLI / OpenAI API フォールバック）
+AI クライアント（Anthropic SDK 優先、ローカルOllama / Codex CLI / OpenAI API フォールバック）
 
 優先順位:
   1. Anthropic API  （ANTHROPIC_API_KEY 設定時）
-  2. Codex CLI      （codex exec）
-  3. OpenAI API     （OPENAI_API_KEY 設定時）
-  4. フォールバック（ハードコード）
+  2. ローカルOllama （OLLAMA_HOST 経由、未設定時はWSL default gatewayを自動検出）
+  3. Codex CLI      （codex exec）
+  4. OpenAI API     （OPENAI_API_KEY 設定時）
+  5. フォールバック（ハードコード）
 
 ※ Gemini CLI はタイムアウト多発のため、現在は無効化。
 """
@@ -16,6 +17,8 @@ import random
 import logging
 import subprocess
 import tempfile
+import urllib.request
+import urllib.error
 from pathlib import Path
 from typing import List, Dict
 
@@ -29,6 +32,7 @@ AGENTS_DIR = ROOT / "agents"
 # モデル設定
 ANTHROPIC_MODEL = "claude-opus-4-6"
 OPENAI_MODEL    = "gpt-4o"
+OLLAMA_MODEL    = os.environ.get("OLLAMA_MODEL", "phi3:mini")
 
 
 # ─── Anthropic SDK ────────────────────────────────────────────────────────────
@@ -134,6 +138,47 @@ def _call_cli(prompt: str, timeout: int = 180) -> str:
     return ""
 
 
+def _detect_ollama_url() -> str:
+    host = os.environ.get("OLLAMA_HOST", "").strip()
+    if host:
+        return host.rstrip("/")
+    try:
+        gw = subprocess.check_output(
+            "ip route | awk '/default/ {print $3}' | head -n1",
+            shell=True,
+            text=True,
+            timeout=2,
+        ).strip()
+        if gw:
+            return f"http://{gw}:11434"
+    except Exception:
+        pass
+    return "http://127.0.0.1:11434"
+
+
+def _call_ollama(prompt: str, timeout: int = 90) -> str:
+    """ローカルOllamaでLLM呼び出し（無料枠優先）"""
+    url = _detect_ollama_url() + "/api/generate"
+    payload = json.dumps({
+        "model": OLLAMA_MODEL,
+        "prompt": prompt,
+        "stream": False,
+    }).encode("utf-8")
+    req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        out = (data.get("response") or "").strip()
+        if out:
+            logger.info(f"[local] ✓ ollama({OLLAMA_MODEL}): {len(out)} chars")
+            return out
+    except urllib.error.URLError as e:
+        logger.debug(f"[local] ollama unreachable: {e}")
+    except Exception as e:
+        logger.debug(f"[local] ollama error: {e}")
+    return ""
+
+
 # ─── OpenAI API フォールバック ─────────────────────────────────────────────
 
 def _get_openai_client():
@@ -164,7 +209,7 @@ def _call_openai(client, system: str, user: str, max_tokens: int) -> str:
 
 
 def _call(system: str, user: str, max_tokens: int = 300) -> str:
-    """Anthropic API → Codex CLI → OpenAI API → 空文字 の順で試みる"""
+    """Anthropic API → ローカルOllama → Codex CLI → OpenAI API → 空文字 の順で試みる"""
     # 1. Anthropic API（最優先）
     ac = _get_anthropic_client()
     if ac:
@@ -172,12 +217,17 @@ def _call(system: str, user: str, max_tokens: int = 300) -> str:
         if result:
             return result
 
-    # 2. Codex CLI
+    # 2. ローカルOllama（無料・高速な一次処理）
+    result = _call_ollama(f"{system}\n\n{user}")
+    if result:
+        return result
+
+    # 3. Codex CLI
     result = _call_codex_cli(f"{system}\n\n{user}")
     if result:
         return result
 
-    # 3. OpenAI API
+    # 4. OpenAI API
     oc = _get_openai_client()
     if oc:
         result = _call_openai(oc, system, user, max_tokens)
