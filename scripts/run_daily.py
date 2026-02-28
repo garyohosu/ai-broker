@@ -17,17 +17,19 @@ from lib.utils import (
     setup_logging, get_today, get_prev_business_day,
     is_weekday, is_monday, acquire_lock, release_lock,
     write_state, git_commit_and_push, git_pull,
+    ROOT, load_json, save_json,
 )
 from lib.market import (
     fetch_prices, fetch_indices, fetch_open_prices,
     save_prices, save_macro, fetch_news, save_news, create_news_placeholder, load_news,
+    get_universe,
 )
 from lib.portfolio import (
     AGENTS, AGENT_NAMES, compute_all_equity, load_equity,
     find_latest_plans, calculate_fills, apply_fills_to_portfolio,
-    save_fills,
+    save_fills, merge_plans_with_weights,
 )
-from lib.claude_client import get_all_daily_comments, analyze_news_impact, get_daily_column
+from lib.claude_client import get_all_daily_comments, analyze_news_impact, get_daily_column, get_trade_plan
 from lib.render import render_daily_post, save_daily_post
 
 logger = setup_logging()
@@ -48,6 +50,43 @@ def build_market_context(date_str: str, price_data: dict, prev_equity: dict) -> 
         lines.append(f"TOPIX ETF: {topix.get('close', 0):,.2f} ({sign}{topix.get('change_pct', 0):.2f}%)")
 
     return "\n".join(lines)
+
+
+def _build_equity_context(equity_data: dict) -> str:
+    agents_sorted = sorted(
+        AGENTS,
+        key=lambda a: equity_data.get("agents", {}).get(a, {}).get("total", 0),
+        reverse=True,
+    )
+    lines = []
+    for i, agent in enumerate(agents_sorted):
+        d = equity_data.get("agents", {}).get(agent, {})
+        sign = "+" if d.get("change", 0) >= 0 else ""
+        lines.append(
+            f"{i+1}位 {AGENT_NAMES.get(agent, agent)}: "
+            f"¥{int(d.get('total', 0)):,} ({sign}{int(d.get('change', 0)):,}円 / {sign}{d.get('change_pct', 0):.2f}%)"
+        )
+    return "\n".join(lines)
+
+
+def _save_daily_signal_plans(date_str: str, market_ctx: str, equity_ctx: str):
+    """平日ミニ再計画: 各エージェントの翌営業日向け配分案を保存する（約定はしない）"""
+    logger.info("平日ミニ再計画（翌営業日シグナル）生成中...")
+    universe = get_universe()
+
+    plans = {}
+    for agent in AGENTS:
+        if agent == "mirai":
+            continue
+        alloc = get_trade_plan(agent, market_ctx, equity_ctx, universe)
+        plans[agent] = alloc
+
+    weights = load_json(ROOT / "agents" / "weights.json").get("weights", {})
+    plans["mirai"] = merge_plans_with_weights(plans, weights)
+
+    out = ROOT / "data" / "trades" / date_str / "daily_signal_plans.json"
+    save_json(out, {"date": date_str, "plans": plans, "note": "平日の観測用シグナル（約定は月曜のみ）"})
+    logger.info(f"平日ミニ再計画保存: {out}")
 
 
 def run(date_str: str, dry_run: bool = False):
@@ -135,9 +174,13 @@ def run(date_str: str, dry_run: bool = False):
         logger.info("エージェントコメント生成中...")
         prev_equity    = load_equity(prev_biz)
         market_ctx     = build_market_context(date_str, price_data, prev_equity)
+        equity_ctx     = _build_equity_context(equity_data)
         agent_comments = get_all_daily_comments(market_ctx)
         for agent, comment in agent_comments.items():
             logger.info(f"  {agent}: {comment[:40]}...")
+
+        # ─── 平日ミニ再計画（観測用。実約定は月曜のみ）──────────────
+        _save_daily_signal_plans(date_str, market_ctx, equity_ctx)
 
         # ─── 今日のコラム担当を選出・生成 ────────────────────────
         columnist_idx   = int(hashlib.md5(date_str.encode()).hexdigest(), 16) % len(AGENTS)
