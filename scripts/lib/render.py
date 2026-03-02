@@ -9,6 +9,7 @@ from datetime import datetime
 
 from .utils import ROOT
 from .portfolio import AGENT_NAMES, AGENTS, INITIAL_CASH
+from .market import get_ticker_labels
 
 logger = logging.getLogger("ai-broker")
 
@@ -44,6 +45,15 @@ AGENT_COLORS = {
     "omakaseko": "#ec4899",   # pink
     "mirai":     "#14b8a6",   # teal
 }
+
+_TICKER_LABELS = get_ticker_labels()
+
+
+def _ticker_with_name(ticker: str) -> str:
+    name = _TICKER_LABELS.get(ticker, "")
+    if not name and not ticker.endswith('.T'):
+        name = _TICKER_LABELS.get(f"{ticker}.T", "")
+    return f"{ticker}({name})" if name else ticker
 
 # ─── 共通 HTML ヘルパー ───────────────────────────────────────────────────────
 
@@ -359,7 +369,7 @@ def render_weekly_post(
       </tr>"""
             continue
         top3 = sorted(alloc.items(), key=lambda x: x[1], reverse=True)[:5]
-        alloc_str = "　".join(f"{t} {v*100:.0f}%" for t, v in top3)
+        alloc_str = "　".join(f"{_ticker_with_name(t)} {v*100:.0f}%" for t, v in top3)
         alloc_rows += f"""
       <tr class="border-b border-gray-100">
         <td class="py-2 px-3 font-medium" style="color:{color}">{name}</td>
