@@ -1,7 +1,12 @@
 {
   "agent": "omakaseko",
   "name": "運任せ子",
-  "cash": 1000000,
-  "holdings": {},
-  "last_updated": ""
+  "cash": 0,
+  "holdings": {
+    "7203.T": 67,
+    "4502.T": 43,
+    "8306.T": 88,
+    "9433.T": 95
+  },
+  "last_updated": "2026-03-02"
 }
