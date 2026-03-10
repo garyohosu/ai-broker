@@ -190,6 +190,10 @@ def _get_openai_client():
         return OpenAI(api_key=api_key)
     except ImportError:
         return None
+    except Exception as e:
+        # 例: openai/httpx 互換不整合（proxies 引数エラー等）
+        logger.warning(f"OpenAI client init skipped: {e}")
+        return None
 
 
 def _call_openai(client, system: str, user: str, max_tokens: int) -> str:
