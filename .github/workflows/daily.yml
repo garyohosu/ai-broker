@@ -24,7 +24,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run daily job
-        run: python scripts/run_daily.py
+        run: python3 scripts/run_daily.py
         # OPENAI_API_KEY 未設定 → CLI フォールバック → ハードコードコメント
         # yfinance で実際の市場データは取得するため記事は毎日更新される
 

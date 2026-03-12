@@ -2,7 +2,7 @@
 """
 平日ジョブ: 価格収集 → 約定処理（月曜のみ） → 資産評価 → 日次記事生成 → commit & push
 
-実行: python scripts/run_daily.py [--date YYYY-MM-DD] [--dry-run]
+実行: python3 scripts/run_daily.py [--date YYYY-MM-DD] [--dry-run]
 """
 import sys
 import hashlib

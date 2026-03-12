@@ -108,16 +108,16 @@ export OPENAI_API_KEY=sk-...
 
 ```bash
 # 平日ジョブ（今日の日付で実行）
-python scripts/run_daily.py
+python3 scripts/run_daily.py
 
 # 特定日付で実行
-python scripts/run_daily.py --date 2026-02-23
+python3 scripts/run_daily.py --date 2026-02-23
 
 # git push なしでテスト
-python scripts/run_daily.py --dry-run
+python3 scripts/run_daily.py --dry-run
 
 # 週末ジョブ
-python scripts/run_weekend.py
+python3 scripts/run_weekend.py
 ```
 
 ---
@@ -133,7 +133,7 @@ cron が起動 → エージェントがメッセージを受け取る → Bash 
 OpenClaw cron
   └─ 指定時刻に isolated セッションを起動
        └─ CLAUDE.md の指示 + --message の内容を受け取る
-            └─ python scripts/run_daily.py を実行
+            └─ python3 scripts/run_daily.py を実行
                  └─ 価格収集 → 記事生成 → git push
 ```
 
@@ -169,7 +169,7 @@ openclaw cron add \
   --cron "30 16 * * 1-5" \
   --tz "Asia/Tokyo" \
   --session isolated \
-  --message "作業ディレクトリ /path/to/ai-broker で平日ジョブを実行してください: python scripts/run_daily.py"
+  --message "作業ディレクトリ /path/to/ai-broker で平日ジョブを実行してください: python3 scripts/run_daily.py"
 
 # ② 土曜ジョブ（土曜 21:00 JST）
 openclaw cron add \
@@ -177,7 +177,7 @@ openclaw cron add \
   --cron "0 21 * * 6" \
   --tz "Asia/Tokyo" \
   --session isolated \
-  --message "作業ディレクトリ /path/to/ai-broker で週末ジョブを実行してください: python scripts/run_weekend.py"
+  --message "作業ディレクトリ /path/to/ai-broker で週末ジョブを実行してください: python3 scripts/run_weekend.py"
 
 # ③ 日曜ジョブ（日曜 21:00 JST）
 openclaw cron add \
@@ -185,7 +185,7 @@ openclaw cron add \
   --cron "0 21 * * 0" \
   --tz "Asia/Tokyo" \
   --session isolated \
-  --message "作業ディレクトリ /path/to/ai-broker で週次記事を確定してください: python scripts/run_weekend.py"
+  --message "作業ディレクトリ /path/to/ai-broker で週次記事を確定してください: python3 scripts/run_weekend.py"
 ```
 
 ### 登録確認・管理

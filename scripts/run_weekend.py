@@ -2,7 +2,7 @@
 """
 週末ジョブ: 週次討論 → 注文計画生成（土曜） / 週次記事確定（日曜） → commit & push
 
-実行: python scripts/run_weekend.py [--date YYYY-MM-DD] [--dry-run]
+実行: python3 scripts/run_weekend.py [--date YYYY-MM-DD] [--dry-run]
 """
 import sys
 import argparse
