@@ -9,6 +9,8 @@ import hashlib
 import argparse
 import datetime
 from pathlib import Path
+from urllib.request import urlopen, Request
+from urllib.error import URLError, HTTPError
 
 # パスを通す
 sys.path.insert(0, str(Path(__file__).parent))
@@ -89,8 +91,23 @@ def _save_daily_signal_plans(date_str: str, market_ctx: str, equity_ctx: str):
     logger.info(f"平日ミニ再計画保存: {out}")
 
 
+def _verify_public_url(date_str: str) -> None:
+    url = f"https://garyohosu.github.io/ai-broker/posts/daily/{date_str}.html"
+    req = Request(url, headers={"User-Agent": "ai-broker/verify"})
+    try:
+        with urlopen(req, timeout=20) as res:
+            body = res.read().decode("utf-8", errors="ignore")
+            if res.status != 200:
+                raise RuntimeError(f"公開失敗: HTTP {res.status} @ {url}")
+            if date_str not in body:
+                raise RuntimeError(f"日付不整合: 公開ページ本文に {date_str} が見つからない @ {url}")
+    except (HTTPError, URLError) as e:
+        raise RuntimeError(f"公開失敗: {url} ({e})") from e
+
+
 def run(date_str: str, dry_run: bool = False):
     logger.info(f"=== run_daily 開始: {date_str} (dry_run={dry_run}) ===")
+    logger.info("基準時刻: JST")
 
     if not is_weekday(date_str):
         logger.warning(f"{date_str} は平日ではありません。スキップします。")
@@ -104,12 +121,10 @@ def run(date_str: str, dry_run: bool = False):
     try:
         write_state("running", date_str=date_str, job_type="daily")
 
-        # ─── git pull ──────────────────────────────────────────────
+        # ─── git pull（記事生成前に必須）──────────────────────────────
         if not dry_run:
-            try:
-                git_pull()
-            except Exception as e:
-                logger.warning(f"git pull 失敗（継続）: {e}")
+            logger.info("記事生成前 git pull --rebase 実行")
+            git_pull()
 
         # ─── 価格取得 ──────────────────────────────────────────────
         logger.info("価格データ取得中...")
@@ -192,12 +207,21 @@ def run(date_str: str, dry_run: bool = False):
         # ─── 日次記事生成 ─────────────────────────────────────────
         logger.info("日次記事生成中...")
         html = render_daily_post(date_str, price_data, equity_data, news_md, agent_comments, column)
+        if date_str not in html:
+            raise RuntimeError(f"日付不整合: 生成HTMLに {date_str} が含まれない")
+
         save_daily_post(date_str, html)
+        expected = ROOT / "docs" / "posts" / "daily" / f"{date_str}.html"
+        if not expected.exists():
+            raise RuntimeError(f"生成失敗: 期待ファイル未作成 {expected}")
+        logger.info(f"生成ファイル確認: {expected}")
 
         # ─── commit & push ────────────────────────────────────────
         if not dry_run:
             logger.info("git commit & push...")
             git_commit_and_push(f"daily: {date_str} — 価格収集・資産評価・記事更新")
+            _verify_public_url(date_str)
+            logger.info(f"公開URL確認OK: https://garyohosu.github.io/ai-broker/posts/daily/{date_str}.html")
 
         write_state("success", date_str=date_str, job_type="daily")
         logger.info(f"=== run_daily 完了: {date_str} ===")
