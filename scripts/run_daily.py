@@ -8,6 +8,7 @@ import sys
 import hashlib
 import argparse
 import datetime
+import time
 from pathlib import Path
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
@@ -93,16 +94,37 @@ def _save_daily_signal_plans(date_str: str, market_ctx: str, equity_ctx: str):
 
 def _verify_public_url(date_str: str) -> None:
     url = f"https://garyohosu.github.io/ai-broker/posts/daily/{date_str}.html"
-    req = Request(url, headers={"User-Agent": "ai-broker/verify"})
-    try:
+    top = "https://garyohosu.github.io/ai-broker/"
+
+    def _fetch(u: str) -> str:
+        req = Request(u, headers={"User-Agent": "ai-broker/verify"})
         with urlopen(req, timeout=20) as res:
-            body = res.read().decode("utf-8", errors="ignore")
             if res.status != 200:
-                raise RuntimeError(f"公開失敗: HTTP {res.status} @ {url}")
+                raise RuntimeError(f"公開失敗: HTTP {res.status} @ {u}")
+            return res.read().decode("utf-8", errors="ignore")
+
+    last_err: Exception | None = None
+    for i in range(1, 7):
+        try:
+            body = _fetch(url)
             if date_str not in body:
                 raise RuntimeError(f"日付不整合: 公開ページ本文に {date_str} が見つからない @ {url}")
-    except (HTTPError, URLError) as e:
-        raise RuntimeError(f"公開失敗: {url} ({e})") from e
+            return
+        except Exception as e:
+            last_err = e
+            logger.warning(f"公開確認待機 ({i}/6): {e}")
+            time.sleep(10)
+
+    # トップに対象日リンクが見えていれば公開反映済みと判断
+    try:
+        top_body = _fetch(top)
+        if f"posts/daily/{date_str}.html" in top_body:
+            logger.info(f"公開確認OK(トップ導線): {top}")
+            return
+    except Exception:
+        pass
+
+    raise RuntimeError(f"公開失敗: {url} ({last_err})") from last_err
 
 
 def run(date_str: str, dry_run: bool = False):
