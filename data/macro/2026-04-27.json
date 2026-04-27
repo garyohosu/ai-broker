@@ -2,17 +2,17 @@
   "date": "2026-04-27",
   "indices": {
     "N225": {
-      "close": 59716.18,
-      "prev_close": 59140.23,
-      "change": 575.95,
-      "change_pct": 0.97
+      "close": 60537.36,
+      "prev_close": 59716.18,
+      "change": 821.18,
+      "change_pct": 1.38
     },
     "TOPIX": {
-      "close": 393.7,
-      "prev_close": 393.6,
-      "change": 0.1,
-      "change_pct": 0.03
+      "close": 395.9,
+      "prev_close": 393.7,
+      "change": 2.2,
+      "change_pct": 0.56
     }
   },
-  "fetched_at": "2026-04-26T21:31:20.081580"
+  "fetched_at": "2026-04-27T16:30:18.743549"
 }
