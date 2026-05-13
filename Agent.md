@@ -21,7 +21,7 @@ python scripts/run_daily.py
 
 ```bash
 cd /path/to/ai-broker
-python scripts/run_weekend.py
+python3 scripts/run_weekend.py
 ```
 
 ## 注意事項
