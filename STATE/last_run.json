@@ -1,11 +1,6 @@
 {
   "date": "2026-05-20",
   "job_type": "daily",
-<<<<<<< Updated upstream
-  "status": "success",
-  "timestamp": "2026-05-19T10:57:49.984347"
-=======
   "status": "running",
-  "timestamp": "2026-05-20T16:30:11.806375"
->>>>>>> Stashed changes
+  "timestamp": "2026-05-20T16:48:05.052872"
 }
