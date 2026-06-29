@@ -1,0 +1,383 @@
+{
+  "date": "2026-06-29",
+  "agents": {
+    "taro": {
+      "name": "上昇太郎",
+      "total": 1126692.0,
+      "prev": 1141094.0,
+      "change": -14402.0,
+      "change_pct": -1.26,
+      "holdings": [
+        {
+          "ticker": "9984.T",
+          "shares": 36,
+          "price": 5894.0,
+          "value": 212184.0
+        },
+        {
+          "ticker": "8035.T",
+          "shares": 2,
+          "price": 74700.0,
+          "value": 149400.0
+        },
+        {
+          "ticker": "6861.T",
+          "shares": 2,
+          "price": 78200.0,
+          "value": 156400.0
+        },
+        {
+          "ticker": "6501.T",
+          "shares": 35,
+          "price": 4486.0,
+          "value": 157010.0
+        },
+        {
+          "ticker": "6758.T",
+          "shares": 42,
+          "price": 3299.0,
+          "value": 138558.0
+        },
+        {
+          "ticker": "4063.T",
+          "shares": 16,
+          "price": 6942.0,
+          "value": 111072.0
+        },
+        {
+          "ticker": "7203.T",
+          "shares": 24,
+          "price": 2772.0,
+          "value": 66528.0
+        },
+        {
+          "ticker": "6098.T",
+          "shares": 12,
+          "price": 11295.0,
+          "value": 135540.0
+        }
+      ],
+      "cash": 0.0
+    },
+    "aiko": {
+      "name": "速読アイ子",
+      "total": 1204669.0,
+      "prev": 1203302.0,
+      "change": 1367.0,
+      "change_pct": 0.11,
+      "holdings": [
+        {
+          "ticker": "7203.T",
+          "shares": 134,
+          "price": 2772.0,
+          "value": 371448.0
+        },
+        {
+          "ticker": "6758.T",
+          "shares": 93,
+          "price": 3299.0,
+          "value": 306807.0
+        },
+        {
+          "ticker": "9432.T",
+          "shares": 1559,
+          "price": 146.0,
+          "value": 227614.0
+        },
+        {
+          "ticker": "8035.T",
+          "shares": 4,
+          "price": 74700.0,
+          "value": 298800.0
+        }
+      ],
+      "cash": 0.0
+    },
+    "ribao": {
+      "name": "反町リバ男",
+      "total": 1094414.0,
+      "prev": 1093841.0,
+      "change": 573.0,
+      "change_pct": 0.05,
+      "holdings": [
+        {
+          "ticker": "8306.T",
+          "shares": 60,
+          "price": 3211.0,
+          "value": 192660.0
+        },
+        {
+          "ticker": "9432.T",
+          "shares": 1133,
+          "price": 146.0,
+          "value": 165418.0
+        },
+        {
+          "ticker": "7751.T",
+          "shares": 34,
+          "price": 4135.0,
+          "value": 140590.0
+        },
+        {
+          "ticker": "4502.T",
+          "shares": 25,
+          "price": 5176.0,
+          "value": 129400.0
+        },
+        {
+          "ticker": "7203.T",
+          "shares": 42,
+          "price": 2772.0,
+          "value": 116424.0
+        },
+        {
+          "ticker": "7267.T",
+          "shares": 67,
+          "price": 1476.0,
+          "value": 98892.0
+        },
+        {
+          "ticker": "2914.T",
+          "shares": 14,
+          "price": 6026.0,
+          "value": 84364.0
+        },
+        {
+          "ticker": "9433.T",
+          "shares": 24,
+          "price": 2717.0,
+          "value": 65208.0
+        },
+        {
+          "ticker": "6902.T",
+          "shares": 28,
+          "price": 1888.0,
+          "value": 52864.0
+        },
+        {
+          "ticker": "4063.T",
+          "shares": 7,
+          "price": 6942.0,
+          "value": 48594.0
+        }
+      ],
+      "cash": 0.0
+    },
+    "jiro": {
+      "name": "金利次郎",
+      "total": 1028564.0,
+      "prev": 1031350.0,
+      "change": -2786.0,
+      "change_pct": -0.27,
+      "holdings": [
+        {
+          "ticker": "8306.T",
+          "shares": 79,
+          "price": 3211.0,
+          "value": 253669.0
+        },
+        {
+          "ticker": "9432.T",
+          "shares": 1069,
+          "price": 146.0,
+          "value": 156074.0
+        },
+        {
+          "ticker": "9433.T",
+          "shares": 38,
+          "price": 2717.0,
+          "value": 103246.0
+        },
+        {
+          "ticker": "2914.T",
+          "shares": 17,
+          "price": 6026.0,
+          "value": 102442.0
+        },
+        {
+          "ticker": "7203.T",
+          "shares": 36,
+          "price": 2772.0,
+          "value": 99792.0
+        },
+        {
+          "ticker": "6501.T",
+          "shares": 22,
+          "price": 4486.0,
+          "value": 98692.0
+        },
+        {
+          "ticker": "7751.T",
+          "shares": 12,
+          "price": 4135.0,
+          "value": 49620.0
+        },
+        {
+          "ticker": "4502.T",
+          "shares": 10,
+          "price": 5176.0,
+          "value": 51760.0
+        },
+        {
+          "ticker": "3382.T",
+          "shares": 26,
+          "price": 1953.5,
+          "value": 50791.0
+        },
+        {
+          "ticker": "4063.T",
+          "shares": 9,
+          "price": 6942.0,
+          "value": 62478.0
+        }
+      ],
+      "cash": 0.0
+    },
+    "omakaseko": {
+      "name": "運任せ子",
+      "total": 1079384.0,
+      "prev": 1080661.0,
+      "change": -1277.0,
+      "change_pct": -0.12,
+      "holdings": [
+        {
+          "ticker": "1343.T",
+          "shares": 137,
+          "price": 1959.0,
+          "value": 268383.0
+        },
+        {
+          "ticker": "8306.T",
+          "shares": 83,
+          "price": 3211.0,
+          "value": 266513.0
+        },
+        {
+          "ticker": "1321.T",
+          "shares": 3,
+          "price": 72800.0,
+          "value": 218400.0
+        },
+        {
+          "ticker": "4502.T",
+          "shares": 63,
+          "price": 5176.0,
+          "value": 326088.0
+        }
+      ],
+      "cash": 0.0
+    },
+    "mirai": {
+      "name": "進化未来",
+      "total": 1003986.0,
+      "prev": 1055303.0,
+      "change": -51317.0,
+      "change_pct": -4.86,
+      "holdings": [
+        {
+          "ticker": "9984.T",
+          "shares": 7,
+          "price": 5894.0,
+          "value": 41258.0
+        },
+        {
+          "ticker": "8035.T",
+          "shares": 1,
+          "price": 74700.0,
+          "value": 74700.0
+        },
+        {
+          "ticker": "6501.T",
+          "shares": 12,
+          "price": 4486.0,
+          "value": 53832.0
+        },
+        {
+          "ticker": "6758.T",
+          "shares": 26,
+          "price": 3299.0,
+          "value": 85774.0
+        },
+        {
+          "ticker": "4063.T",
+          "shares": 6,
+          "price": 6942.0,
+          "value": 41652.0
+        },
+        {
+          "ticker": "7203.T",
+          "shares": 48,
+          "price": 2772.0,
+          "value": 133056.0
+        },
+        {
+          "ticker": "9432.T",
+          "shares": 789,
+          "price": 146.0,
+          "value": 115194.0
+        },
+        {
+          "ticker": "8306.T",
+          "shares": 40,
+          "price": 3211.0,
+          "value": 128440.0
+        },
+        {
+          "ticker": "7751.T",
+          "shares": 10,
+          "price": 4135.0,
+          "value": 41350.0
+        },
+        {
+          "ticker": "4502.T",
+          "shares": 13,
+          "price": 5176.0,
+          "value": 67288.0
+        },
+        {
+          "ticker": "7267.T",
+          "shares": 14,
+          "price": 1476.0,
+          "value": 20664.0
+        },
+        {
+          "ticker": "2914.T",
+          "shares": 7,
+          "price": 6026.0,
+          "value": 42182.0
+        },
+        {
+          "ticker": "9433.T",
+          "shares": 13,
+          "price": 2717.0,
+          "value": 35321.0
+        },
+        {
+          "ticker": "6902.T",
+          "shares": 6,
+          "price": 1888.0,
+          "value": 11328.0
+        },
+        {
+          "ticker": "3382.T",
+          "shares": 6,
+          "price": 1953.5,
+          "value": 11721.0
+        },
+        {
+          "ticker": "1343.T",
+          "shares": 14,
+          "price": 1959.0,
+          "value": 27426.0
+        },
+        {
+          "ticker": "1321.T",
+          "shares": 1,
+          "price": 72800.0,
+          "value": 72800.0
+        }
+      ],
+      "cash": 0.0
+    }
+  }
+}
