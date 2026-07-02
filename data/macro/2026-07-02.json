@@ -2,17 +2,17 @@
   "date": "2026-07-02",
   "indices": {
     "N225": {
-      "close": 69215.83,
+      "close": 68733.15,
       "prev_close": 70474.96,
-      "change": -1259.13,
-      "change_pct": -1.79
+      "change": -1741.81,
+      "change_pct": -2.47
     },
     "TOPIX": {
-      "close": 428.5,
+      "close": 426.4,
       "prev_close": 425.8,
-      "change": 2.7,
-      "change_pct": 0.63
+      "change": 0.6,
+      "change_pct": 0.14
     }
   },
-  "fetched_at": "2026-07-02T13:27:26.519816"
+  "fetched_at": "2026-07-02T10:17:51.349862"
 }
