@@ -74,14 +74,68 @@ def get_last_saturday(date_str: str) -> str:
 LOCK_DIR = ROOT / "STATE" / "lock"
 
 
+def _pid_is_running(pid: int) -> bool:
+    """PID が現在の OS 上で生きているかを返す"""
+    if pid <= 0:
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _read_lock_metadata(lock_file: Path) -> dict:
+    try:
+        return json.loads(lock_file.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _legacy_lock_is_stale(lock_file: Path, meta: dict, max_age_minutes: int = 30) -> bool:
+    """pid を持たない旧形式ロックを、経過時間ベースで stale 判定する"""
+    acquired_at = meta.get("acquired_at")
+    if acquired_at:
+        try:
+            acquired_dt = datetime.datetime.fromisoformat(acquired_at)
+            if datetime.datetime.now(acquired_dt.tzinfo) - acquired_dt > datetime.timedelta(minutes=max_age_minutes):
+                return True
+        except Exception:
+            pass
+
+    try:
+        mtime = datetime.datetime.fromtimestamp(lock_file.stat().st_mtime)
+        if datetime.datetime.now() - mtime > datetime.timedelta(minutes=max_age_minutes):
+            return True
+    except Exception:
+        pass
+    return False
+
+
 def acquire_lock(date_str: str, job_type: str) -> bool:
     """ロックを取得する。既に存在する場合は False を返す"""
     LOCK_DIR.mkdir(parents=True, exist_ok=True)
     lock_file = LOCK_DIR / f"{date_str}_{job_type}.lock"
     if lock_file.exists():
-        return False
+        meta = _read_lock_metadata(lock_file)
+        pid = int(meta.get("pid") or 0)
+        if pid and not _pid_is_running(pid):
+            lock_file.unlink()
+        elif not pid and _legacy_lock_is_stale(lock_file, meta):
+            lock_file.unlink()
+        else:
+            return False
     lock_file.write_text(
-        json.dumps({"acquired_at": datetime.datetime.now().isoformat(), "job_type": job_type}),
+        json.dumps(
+            {
+                "acquired_at": datetime.datetime.now().isoformat(),
+                "job_type": job_type,
+                "pid": os.getpid(),
+            },
+            ensure_ascii=False,
+        ),
         encoding="utf-8"
     )
     return True
