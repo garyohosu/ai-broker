@@ -9,10 +9,10 @@
     },
     "TOPIX": {
       "close": 422.1,
-      "prev_close": 419.1,
-      "change": 3.0,
-      "change_pct": 0.72
+      "prev_close": 411.2,
+      "change": 10.9,
+      "change_pct": 2.65
     }
   },
-  "fetched_at": "2026-07-10T10:33:22.858146"
+  "fetched_at": "2026-07-10T23:25:47.237242"
 }

@@ -2,12 +2,21 @@
 市場データ取得・正規化モジュール
 yfinance を使って東証銘柄・指数・金利データを取得する
 """
+from __future__ import annotations
+
 import logging
 import datetime
 from pathlib import Path
 
-import yfinance as yf
-import pandas as pd
+try:
+    import yfinance as yf
+except ImportError:
+    yf = None
+
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 from .utils import ROOT, load_json, save_json, get_today
 
@@ -23,6 +32,11 @@ INDEX_SYMBOLS = {
     "N225":    "^N225",   # 日経平均
     "TOPIX":   "1306.T",  # TOPIX 連動 ETF（代用）
 }
+
+
+def _require_market_deps():
+    if yf is None or pd is None:
+        raise ImportError("market data dependencies are missing: install yfinance and pandas")
 
 
 # ─── ユニバース ────────────────────────────────────────────────────────────────
@@ -43,6 +57,7 @@ def get_ticker_labels() -> Dict[str, str]:
 
 def _history(ticker: str, start: str, end: str) -> pd.DataFrame:
     """yfinance.Ticker.history で安全にデータ取得"""
+    _require_market_deps()
     try:
         t = yf.Ticker(ticker)
         df = t.history(start=start, end=end, auto_adjust=True)
@@ -65,6 +80,7 @@ def _latest_row_before(df: pd.DataFrame, date_str: str):
 
 def fetch_prices(date_str: str) -> Dict[str, Dict]:
     """ユニバース全銘柄の終値などを取得して返す"""
+    _require_market_deps()
     tickers = get_universe()
     if not tickers:
         logger.warning("ユニバースが空です")
@@ -95,6 +111,7 @@ def fetch_prices(date_str: str) -> Dict[str, Dict]:
 
 def fetch_indices(date_str: str) -> Dict[str, Dict]:
     """指数データを取得して返す"""
+    _require_market_deps()
     dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
     start = (dt - datetime.timedelta(days=10)).strftime("%Y-%m-%d")
     end   = (dt + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -129,6 +146,7 @@ def fetch_indices(date_str: str) -> Dict[str, Dict]:
 
 def fetch_open_prices(date_str: str, tickers: List[str]) -> Dict[str, float]:
     """指定日の始値を返す（月曜約定用）"""
+    _require_market_deps()
     if not tickers:
         return {}
 
@@ -223,6 +241,7 @@ def _parse_yf_news_item(item: dict, fallback_ticker: str) -> Dict:
 
 def fetch_news(date_str: str) -> List[Dict]:
     """ユニバース銘柄のニュースを yfinance で取得して返す（重複排除済み）"""
+    _require_market_deps()
     tickers = get_universe()
     dt      = datetime.datetime.strptime(date_str, "%Y-%m-%d")
     cutoff  = (dt - datetime.timedelta(days=2)).timestamp()   # 直近2日
