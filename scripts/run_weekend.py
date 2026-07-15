@@ -11,6 +11,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+from bootstrap import ensure_repo_python
+
+ensure_repo_python()
+
 from lib.utils import (
     setup_logging, get_today, get_prev_business_day,
     get_day_of_week, get_week_number, get_last_saturday,

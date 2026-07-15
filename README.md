@@ -87,7 +87,7 @@ ai-broker/
 ## セットアップ
 
 ### 必要環境
-- Python 3.12+
+- Python 3.8+（推奨: repo 内 `.venv`）
 - OpenAI API キー
 
 ### インストール
@@ -95,6 +95,8 @@ ai-broker/
 ```bash
 git clone https://github.com/garyohosu/ai-broker.git
 cd ai-broker
+python3 -m venv .venv
+. .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -108,16 +110,16 @@ export OPENAI_API_KEY=sk-...
 
 ```bash
 # 平日ジョブ（今日の日付で実行）
-python3 scripts/run_daily.py
+./.venv/bin/python scripts/run_daily.py
 
 # 特定日付で実行
-python3 scripts/run_daily.py --date 2026-02-23
+./.venv/bin/python scripts/run_daily.py --date 2026-02-23
 
 # git push なしでテスト
-python3 scripts/run_daily.py --dry-run
+./.venv/bin/python scripts/run_daily.py --dry-run
 
 # 週末ジョブ
-python3 scripts/run_weekend.py
+./.venv/bin/python scripts/run_weekend.py
 ```
 
 ---
@@ -133,14 +135,14 @@ cron が起動 → エージェントがメッセージを受け取る → Bash 
 OpenClaw cron
   └─ 指定時刻に isolated セッションを起動
        └─ CLAUDE.md の指示 + --message の内容を受け取る
-            └─ python3 scripts/run_daily.py を実行
+            └─ ./.venv/bin/python scripts/run_daily.py を実行
                  └─ 価格収集 → 記事生成 → git push
 ```
 
 ### 前提条件
 
 1. **リポジトリをクローン**してある（例: `/home/user/ai-broker`）
-2. **依存パッケージ**をインストール済み（`pip install -r requirements.txt`）
+2. **依存パッケージ**を repo 内 `.venv` にインストール済み（`python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt`）
 3. **環境変数**を設定済み
 
 ```bash
@@ -169,7 +171,7 @@ openclaw cron add \
   --cron "30 16 * * 1-5" \
   --tz "Asia/Tokyo" \
   --session isolated \
-  --message "作業ディレクトリ /path/to/ai-broker で平日ジョブを実行してください: python3 scripts/run_daily.py"
+  --message "作業ディレクトリ /path/to/ai-broker で平日ジョブを実行してください: ./.venv/bin/python scripts/run_daily.py"
 
 # ② 土曜ジョブ（土曜 21:00 JST）
 openclaw cron add \
@@ -177,7 +179,7 @@ openclaw cron add \
   --cron "0 21 * * 6" \
   --tz "Asia/Tokyo" \
   --session isolated \
-  --message "作業ディレクトリ /path/to/ai-broker で週末ジョブを実行してください: python3 scripts/run_weekend.py"
+  --message "作業ディレクトリ /path/to/ai-broker で週末ジョブを実行してください: ./.venv/bin/python scripts/run_weekend.py"
 
 # ③ 日曜ジョブ（日曜 21:00 JST）
 openclaw cron add \
@@ -185,7 +187,7 @@ openclaw cron add \
   --cron "0 21 * * 0" \
   --tz "Asia/Tokyo" \
   --session isolated \
-  --message "作業ディレクトリ /path/to/ai-broker で週次記事を確定してください: python3 scripts/run_weekend.py"
+  --message "作業ディレクトリ /path/to/ai-broker で週次記事を確定してください: ./.venv/bin/python scripts/run_weekend.py"
 ```
 
 ### 登録確認・管理

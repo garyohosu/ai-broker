@@ -6,7 +6,8 @@
 
 - 作業ディレクトリ: このリポジトリのルート（`ai-broker/`）
 - 必要な環境変数: `OPENAI_API_KEY`
-- Python 3.12+、git が使用可能なこと
+- repo 内 `.venv` が作成済みで、`requirements.txt` が入っていること
+- git が使用可能なこと
 
 ## cron から呼ばれたときの動作
 
@@ -14,14 +15,14 @@
 
 ```bash
 cd /path/to/ai-broker
-python scripts/run_daily.py
+./.venv/bin/python scripts/run_daily.py
 ```
 
 ### 「週末ジョブを実行」と言われた場合
 
 ```bash
 cd /path/to/ai-broker
-python3 scripts/run_weekend.py
+./.venv/bin/python scripts/run_weekend.py
 ```
 
 ## 注意事項
