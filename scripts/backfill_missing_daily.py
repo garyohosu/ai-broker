@@ -126,7 +126,10 @@ def main() -> None:
         save_news(date_str, news)
         equity = build_equity(date_str, prices)
         comments = {a: "履歴補完データとして、当日の実市場価格で資産評価を再計算しました。" for a in AGENTS}
-        column = "このページは運用停止期間の欠落を補うため、Yahoo Financeの当日OHLCデータと既存の保有スナップショットから再構成しました。新たな仮想売買は行っていません。"
+        column = {
+            "agent": "mirai", "columnist": AGENT_NAMES["mirai"], "title": "履歴補完について",
+            "body": "このページは運用停止期間の欠落を補うため、Yahoo Financeの当日OHLCデータと既存の保有スナップショットから再構成しました。新たな仮想売買は行っていません。",
+        }
         html = render_daily_post(date_str, {"prices": prices, "indices": indices}, equity, "- 過去営業日の履歴補完", comments, column)
         save_daily_post(date_str, html)
         save_json(ROOT / "data/trades" / date_str / "daily_signal_plans.json", {
