@@ -35,6 +35,18 @@ OPENAI_MODEL    = "gpt-4o"
 OLLAMA_MODEL    = os.environ.get("OLLAMA_MODEL", "phi3:mini")
 
 
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.environ.get(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
+OLLAMA_TIMEOUT = _env_int("AI_BROKER_OLLAMA_TIMEOUT", 10)
+CODEX_TIMEOUT = _env_int("AI_BROKER_CODEX_TIMEOUT", 30)
+ENABLE_CODEX_CLI = os.environ.get("AI_BROKER_ENABLE_CODEX_CLI", "").lower() in {"1", "true", "yes"}
+
+
 # ─── Anthropic SDK ────────────────────────────────────────────────────────────
 
 def _get_anthropic_client():
@@ -70,7 +82,7 @@ def _call_anthropic(client, system: str, user: str, max_tokens: int) -> str:
 
 # ─── CLI フォールバック ───────────────────────────────────────────────────────
 
-def _call_codex_cli(prompt: str, timeout: int = 240) -> str:
+def _call_codex_cli(prompt: str, timeout: int = CODEX_TIMEOUT) -> str:
     """Codex CLI で LLM を呼び出す（non-interactive: codex exec）"""
     output_file = None
     try:
@@ -156,7 +168,7 @@ def _detect_ollama_url() -> str:
     return "http://127.0.0.1:11434"
 
 
-def _call_ollama(prompt: str, timeout: int = 90) -> str:
+def _call_ollama(prompt: str, timeout: int = OLLAMA_TIMEOUT) -> str:
     """ローカルOllamaでLLM呼び出し（無料枠優先）"""
     url = _detect_ollama_url() + "/api/generate"
     payload = json.dumps({
@@ -226,10 +238,12 @@ def _call(system: str, user: str, max_tokens: int = 300) -> str:
     if result:
         return result
 
-    # 3. Codex CLI
-    result = _call_codex_cli(f"{system}\n\n{user}")
-    if result:
-        return result
+    # 3. Codex CLI. Isolated cron sessions often cannot bootstrap an
+    # interactive agent fast enough, so keep this opt-in.
+    if ENABLE_CODEX_CLI:
+        result = _call_codex_cli(f"{system}\n\n{user}")
+        if result:
+            return result
 
     # 4. OpenAI API
     oc = _get_openai_client()
