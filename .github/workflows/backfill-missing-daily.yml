@@ -1,0 +1,43 @@
+name: Backfill missing daily records
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/backfill_missing_daily.py
+      - .github/workflows/backfill-missing-daily.yml
+
+permissions:
+  contents: write
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Generate five missing trading days
+        run: python3 scripts/backfill_missing_daily.py
+      - name: Validate and publish
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          dates = ['2026-03-17','2026-03-18','2026-03-23','2026-04-02','2026-05-26']
+          for day in dates:
+              data = json.loads(Path(f'data/prices/{day}.json').read_text())
+              assert len(data['prices']) == 23
+              assert len(data['indices']) == 2
+              assert Path(f'data/equity/{day}.json').exists()
+              assert Path(f'docs/posts/daily/{day}.html').exists()
+          PY
+          git config user.name "ai-broker-bot"
+          git config user.email "ai-broker-bot@users.noreply.github.com"
+          git add data docs
+          git diff --cached --quiet || git commit -m "data: backfill five missing trading days"
+          git push
