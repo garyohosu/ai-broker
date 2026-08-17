@@ -4,308 +4,308 @@
     "taro": {
       "6501.T": {
         "shares": 40,
-        "price": 5590.0,
-        "amount": 223600.0
+        "price": 5668.0,
+        "amount": 226720.0
       },
       "8035.T": {
         "shares": 3,
-        "price": 55800.0,
-        "amount": 167400.0
+        "price": 59270.0,
+        "amount": 177810.0
       },
       "6758.T": {
         "shares": 45,
-        "price": 3707.0,
-        "amount": 166815.0
+        "price": 3853.0,
+        "amount": 173385.0
       },
       "9984.T": {
         "shares": 30,
-        "price": 5491.0,
-        "amount": 164730.0
+        "price": 5750.0,
+        "amount": 172500.0
       },
       "6861.T": {
         "shares": 1,
-        "price": 85220.0,
-        "amount": 85220.0
+        "price": 87470.0,
+        "amount": 87470.0
       },
       "4063.T": {
         "shares": 14,
-        "price": 6224.0,
-        "amount": 87136.0
+        "price": 6390.0,
+        "amount": 89460.0
       },
       "7203.T": {
         "shares": 26,
-        "price": 2989.5,
-        "amount": 77727.0
+        "price": 3043.0,
+        "amount": 79118.0
       },
       "6902.T": {
-        "shares": 76,
-        "price": 1950.0,
-        "amount": 148200.0
+        "shares": 78,
+        "price": 1953.0,
+        "amount": 152334.0
       }
     },
     "aiko": {
       "6758.T": {
-        "shares": 82,
-        "price": 3707.0,
-        "amount": 303974.0
+        "shares": 81,
+        "price": 3853.0,
+        "amount": 312093.0
       },
       "8306.T": {
-        "shares": 68,
-        "price": 3550.0,
-        "amount": 241400.0
+        "shares": 67,
+        "price": 3705.0,
+        "amount": 248235.0
       },
       "6501.T": {
-        "shares": 32,
-        "price": 5590.0,
-        "amount": 178880.0
+        "shares": 33,
+        "price": 5668.0,
+        "amount": 187044.0
       },
       "9433.T": {
         "shares": 65,
-        "price": 2800.0,
-        "amount": 182000.0
+        "price": 2880.0,
+        "amount": 187200.0
       },
       "9432.T": {
         "shares": 772,
-        "price": 157.9,
-        "amount": 121898.8
+        "price": 163.0,
+        "amount": 125836.0
       },
       "4519.T": {
         "shares": 17,
-        "price": 6900.0,
-        "amount": 117300.0
+        "price": 6998.0,
+        "amount": 118966.0
       },
       "7267.T": {
-        "shares": 44,
-        "price": 1682.5,
-        "amount": 74030.0
+        "shares": 47,
+        "price": 1685.0,
+        "amount": 79195.0
       }
     },
     "ribao": {
       "7203.T": {
         "shares": 72,
-        "price": 2989.5,
-        "amount": 215244.0
+        "price": 3043.0,
+        "amount": 219096.0
       },
       "6758.T": {
         "shares": 19,
-        "price": 3707.0,
-        "amount": 70433.0
+        "price": 3853.0,
+        "amount": 73207.0
       },
       "9984.T": {
         "shares": 8,
-        "price": 5491.0,
-        "amount": 43928.0
+        "price": 5750.0,
+        "amount": 46000.0
       },
       "8306.T": {
-        "shares": 40,
-        "price": 3550.0,
-        "amount": 142000.0
+        "shares": 39,
+        "price": 3705.0,
+        "amount": 144495.0
       },
       "9432.T": {
-        "shares": 762,
-        "price": 157.9,
-        "amount": 120319.8
+        "shares": 750,
+        "price": 163.0,
+        "amount": 122250.0
       },
       "7267.T": {
-        "shares": 85,
-        "price": 1682.5,
-        "amount": 143012.5
+        "shares": 87,
+        "price": 1685.0,
+        "amount": 146595.0
       },
       "6501.T": {
         "shares": 10,
-        "price": 5590.0,
-        "amount": 55900.0
+        "price": 5668.0,
+        "amount": 56680.0
       },
       "9433.T": {
-        "shares": 34,
-        "price": 2800.0,
-        "amount": 95200.0
+        "shares": 33,
+        "price": 2880.0,
+        "amount": 95040.0
       },
       "2914.T": {
         "shares": 15,
-        "price": 7103.0,
-        "amount": 106545.0
+        "price": 7168.0,
+        "amount": 107520.0
       },
       "7751.T": {
-        "shares": 25,
-        "price": 4652.0,
-        "amount": 116300.0
+        "shares": 26,
+        "price": 4611.0,
+        "amount": 119886.0
       },
       "6902.T": {
-        "shares": 48,
-        "price": 1950.0,
-        "amount": 93600.0
+        "shares": 47,
+        "price": 1953.0,
+        "amount": 91791.0
       }
     },
     "jiro": {
       "8306.T": {
-        "shares": 62,
-        "price": 3550.0,
-        "amount": 220100.0
+        "shares": 60,
+        "price": 3705.0,
+        "amount": 222300.0
       },
       "9432.T": {
-        "shares": 1054,
-        "price": 157.9,
-        "amount": 166426.6
+        "shares": 1036,
+        "price": 163.0,
+        "amount": 168868.0
       },
       "9433.T": {
-        "shares": 47,
-        "price": 2800.0,
-        "amount": 131600.0
+        "shares": 46,
+        "price": 2880.0,
+        "amount": 132480.0
       },
       "2914.T": {
         "shares": 15,
-        "price": 7103.0,
-        "amount": 106545.0
+        "price": 7168.0,
+        "amount": 107520.0
       },
       "3382.T": {
-        "shares": 42,
-        "price": 2105.5,
-        "amount": 88431.0
+        "shares": 43,
+        "price": 2067.0,
+        "amount": 88881.0
       },
       "4502.T": {
-        "shares": 16,
-        "price": 5550.0,
-        "amount": 88800.0
+        "shares": 15,
+        "price": 5640.0,
+        "amount": 84600.0
       },
       "4519.T": {
         "shares": 8,
-        "price": 6900.0,
-        "amount": 55200.0
+        "price": 6998.0,
+        "amount": 55984.0
       },
       "7203.T": {
         "shares": 29,
-        "price": 2989.5,
-        "amount": 86695.5
+        "price": 3043.0,
+        "amount": 88247.0
       },
       "7267.T": {
         "shares": 26,
-        "price": 1682.5,
-        "amount": 43745.0
+        "price": 1685.0,
+        "amount": 43810.0
       },
       "6501.T": {
         "shares": 9,
-        "price": 5590.0,
-        "amount": 50310.0
+        "price": 5668.0,
+        "amount": 51012.0
       },
       "4063.T": {
         "shares": 5,
-        "price": 6224.0,
-        "amount": 31120.0
+        "price": 6390.0,
+        "amount": 31950.0
       },
       "7751.T": {
-        "shares": 8,
-        "price": 4652.0,
-        "amount": 37216.0
+        "shares": 10,
+        "price": 4611.0,
+        "amount": 46110.0
       }
     },
     "omakaseko": {
       "8035.T": {
         "shares": 4,
-        "price": 55800.0,
-        "amount": 223200.0
+        "price": 59270.0,
+        "amount": 237080.0
       },
       "8306.T": {
-        "shares": 77,
-        "price": 3550.0,
-        "amount": 273350.0
+        "shares": 76,
+        "price": 3705.0,
+        "amount": 281580.0
       },
       "6501.T": {
         "shares": 49,
-        "price": 5590.0,
-        "amount": 273910.0
+        "price": 5668.0,
+        "amount": 277732.0
       },
       "7267.T": {
         "shares": 199,
-        "price": 1682.5,
-        "amount": 334817.5
+        "price": 1685.0,
+        "amount": 335315.0
       }
     },
     "mirai": {
       "6501.T": {
-        "shares": 22,
-        "price": 5590.0,
-        "amount": 122980.0
+        "shares": 23,
+        "price": 5668.0,
+        "amount": 130364.0
       },
       "8035.T": {
         "shares": 1,
-        "price": 55800.0,
-        "amount": 55800.0
+        "price": 59270.0,
+        "amount": 59270.0
       },
       "6758.T": {
         "shares": 27,
-        "price": 3707.0,
-        "amount": 100089.0
+        "price": 3853.0,
+        "amount": 104031.0
       },
       "9984.T": {
         "shares": 7,
-        "price": 5491.0,
-        "amount": 38437.0
+        "price": 5750.0,
+        "amount": 40250.0
       },
       "6861.T": {
         "shares": 0,
-        "price": 85220.0,
+        "price": 87470.0,
         "amount": 0.0
       },
       "4063.T": {
         "shares": 3,
-        "price": 6224.0,
-        "amount": 18672.0
+        "price": 6390.0,
+        "amount": 19170.0
       },
       "7203.T": {
         "shares": 24,
-        "price": 2989.5,
-        "amount": 71748.0
+        "price": 3043.0,
+        "amount": 73032.0
       },
       "6902.T": {
         "shares": 12,
-        "price": 1950.0,
-        "amount": 23400.0
+        "price": 1953.0,
+        "amount": 23436.0
       },
       "8306.T": {
-        "shares": 40,
-        "price": 3550.0,
-        "amount": 142000.0
+        "shares": 39,
+        "price": 3705.0,
+        "amount": 144495.0
       },
       "9433.T": {
         "shares": 27,
-        "price": 2800.0,
-        "amount": 75600.0
+        "price": 2880.0,
+        "amount": 77760.0
       },
       "9432.T": {
-        "shares": 491,
-        "price": 157.9,
-        "amount": 77528.9
+        "shares": 488,
+        "price": 163.0,
+        "amount": 79544.0
       },
       "4519.T": {
         "shares": 4,
-        "price": 6900.0,
-        "amount": 27600.0
+        "price": 6998.0,
+        "amount": 27992.0
       },
       "7267.T": {
-        "shares": 44,
-        "price": 1682.5,
-        "amount": 74030.0
+        "shares": 45,
+        "price": 1685.0,
+        "amount": 75825.0
       },
       "2914.T": {
-        "shares": 5,
-        "price": 7103.0,
-        "amount": 35515.0
+        "shares": 6,
+        "price": 7168.0,
+        "amount": 43008.0
       },
       "7751.T": {
         "shares": 5,
-        "price": 4652.0,
-        "amount": 23260.0
+        "price": 4611.0,
+        "amount": 23055.0
       },
       "3382.T": {
         "shares": 8,
-        "price": 2105.5,
-        "amount": 16844.0
+        "price": 2067.0,
+        "amount": 16536.0
       },
       "4502.T": {
-        "shares": 17,
-        "price": 5550.0,
-        "amount": 94350.0
+        "shares": 15,
+        "price": 5640.0,
+        "amount": 84600.0
       }
     }
   }
