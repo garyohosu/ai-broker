@@ -68,11 +68,18 @@ def _history(ticker: str, start: str, end: str) -> pd.DataFrame:
 
 
 def _latest_row_before(df: pd.DataFrame, date_str: str):
-    """date_str 以前の最新行を返す。なければ None"""
+    """date_str 以前の最新の有効な終値行を返す。なければ None"""
     if df.empty:
         return None
     mask = df.index.strftime("%Y-%m-%d") <= date_str
     sub = df[mask]
+    if sub.empty:
+        return None
+
+    # yfinance は取引日として行を返しても Close が NaN のことがある。
+    # その行を採用すると資産評価全体へ NaN が伝播するため、直近の有効終値まで戻る。
+    if "Close" in sub.columns:
+        sub = sub[sub["Close"].notna()]
     if sub.empty:
         return None
     return sub.iloc[-1]
@@ -97,12 +104,17 @@ def fetch_prices(date_str: str) -> Dict[str, Dict]:
         if row is None:
             logger.warning(f"価格データなし: {ticker}")
             continue
+
+        close = float(row["Close"])
+        open_ = float(row["Open"]) if pd.notna(row.get("Open")) else close
+        high  = float(row["High"]) if pd.notna(row.get("High")) else close
+        low   = float(row["Low"]) if pd.notna(row.get("Low")) else close
         result[ticker] = {
-            "close":  round(float(row["Close"]),  2),
-            "open":   round(float(row["Open"]),   2),
-            "high":   round(float(row["High"]),   2),
-            "low":    round(float(row["Low"]),    2),
-            "volume": int(row["Volume"]) if not pd.isna(row["Volume"]) else 0,
+            "close":  round(close, 2),
+            "open":   round(open_, 2),
+            "high":   round(high, 2),
+            "low":    round(low, 2),
+            "volume": int(row["Volume"]) if pd.notna(row.get("Volume")) else 0,
         }
 
     logger.info(f"{len(result)}/{len(tickers)} 銘柄の価格取得完了")
@@ -126,9 +138,11 @@ def fetch_indices(date_str: str) -> Dict[str, Dict]:
 
         close = float(row["Close"])
 
-        # 前日終値を取得
+        # 前日終値を取得。NaN 行は除外する。
         mask_prev = df.index.strftime("%Y-%m-%d") < row.name.strftime("%Y-%m-%d")
         prev_df = df[mask_prev]
+        if "Close" in prev_df.columns:
+            prev_df = prev_df[prev_df["Close"].notna()]
         prev_close = float(prev_df.iloc[-1]["Close"]) if not prev_df.empty else close
 
         change     = close - prev_close
@@ -160,9 +174,11 @@ def fetch_open_prices(date_str: str, tickers: List[str]) -> Dict[str, float]:
         if df.empty:
             logger.warning(f"始値データなし: {ticker}")
             continue
-        # 指定日以降の最初の取引日の始値
+        # 指定日以降の最初の取引日の有効な始値
         mask = df.index.strftime("%Y-%m-%d") >= date_str
         sub = df[mask]
+        if "Open" in sub.columns:
+            sub = sub[sub["Open"].notna()]
         if not sub.empty:
             result[ticker] = round(float(sub.iloc[0]["Open"]), 2)
 
@@ -200,7 +216,7 @@ def load_prices(date_str: str) -> dict:
 
 
 def save_macro(date_str: str, indices: dict):
-    """data/macro/YYYY-MM-DD.json に保存"""
+    """data/macro/YYYY-MM-DD.json を保存"""
     path = MACRO_DIR / f"{date_str}.json"
     save_json(path, {
         "date":       date_str,
