@@ -103,6 +103,8 @@ pip install -r requirements.txt
 ### 環境変数
 
 ```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+# または
 export OPENAI_API_KEY=sk-...
 ```
 
@@ -147,6 +149,8 @@ OpenClaw cron
 
 ```bash
 # ~/.bashrc や ~/.zshrc に追記（または OpenClaw の環境変数設定に登録）
+export ANTHROPIC_API_KEY=sk-ant-...
+# または
 export OPENAI_API_KEY=sk-...
 ```
 
@@ -209,7 +213,8 @@ openclaw cron remove --name "ai-broker daily"
 | 記事が更新されない | `STATE/last_run.json` の `status` と `error` を確認 |
 | git push が失敗する | SSH キーまたは HTTPS token の認証設定を確認 |
 | 同日に二重実行された | `STATE/lock/YYYY-MM-DD_daily.lock` が残っていれば削除 |
-| API エラーが出る | `OPENAI_API_KEY` が正しく設定されているか確認 |
+| API エラーが出る | `ANTHROPIC_API_KEY` または `OPENAI_API_KEY` が正しく設定されているか確認 |
+| `python: command not found` | `python scripts/...` ではなく `./.venv/bin/python scripts/...` または `python3 scripts/...` で実行 |
 
 ---
 

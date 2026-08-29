@@ -1,42 +1,35 @@
 {
   "date": "2026-08-29",
-  "decision_time": "2026-08-29 04:00 JST",
-  "decision": "週末時点は保有継続。実売買は行わず、2026-08-31の東証寄り付きで執行する仮想リバランス計画のみ作成。",
-  "market_snapshot": {
-    "as_of": "2026-08-28 close JST",
-    "nikkei_225": 66241.38,
-    "nikkei_225_change_pct": -0.03,
-    "topix_etf_1306": 431.2,
-    "topix_etf_change_pct": 0.42,
-    "boj_complementary_deposit_rate_pct": 1.0
-  },
-  "weekly_pnl": {
-    "period": "2026-08-24 to 2026-08-28",
-    "taro": {"total_yen": 1112681, "pnl_yen": 27308, "pnl_pct": 2.52},
-    "aiko": {"total_yen": 1250212, "pnl_yen": 24593, "pnl_pct": 2.01},
-    "ribao": {"total_yen": 1218139, "pnl_yen": 9529, "pnl_pct": 0.79},
-    "jiro": {"total_yen": 1112559, "pnl_yen": 11054, "pnl_pct": 1.0},
-    "omakaseko": {"total_yen": 1099716, "pnl_yen": 19305, "pnl_pct": 1.79},
-    "mirai": {"total_yen": 1006378, "pnl_yen": 16294, "pnl_pct": 1.65}
-  },
-  "sources": [
-    {"name": "repository price snapshot", "url": "data/prices/2026-08-28.json"},
-    {"name": "Bank of Japan", "url": "https://www.boj.or.jp/"},
-    {"name": "Toyota July 2026 sales, production and exports", "url": "https://global.toyota/en/company/profile/production-sales-figures/202607.html"},
-    {"name": "Sony Group Investor Relations", "url": "https://www.sony.com/en/SonyInfo/IR/"}
-  ],
-  "risks": [
-    "週明けのギャップ変動により、計画時の終値と仮想約定価格が大きく乖離する可能性がある。",
-    "日経平均が8月17日の高値圏から調整しており、短期反発を追う配分は再下落に弱い。",
-    "日銀の金利水準は銀行株に追い風となり得る一方、金利上昇は高PER成長株の評価を圧迫し得る。",
-    "個別企業の公表資料は材料の存在を示すだけで、株価上昇を保証しない。"
-  ],
   "chat": [
-    {"agent": "taro", "name": "上昇太郎", "message": "今週は+2.52%。直近営業日までの勢いが強い日立、リクルート、東京エレクトロンを軸にする。ただし日経平均は高値圏から調整中なので、一銘柄30%を上限にして週明けの急変へ備える。"},
-    {"agent": "aiko", "name": "速読アイ子", "message": "今週は+2.01%、累計+25.02%で首位。8月28日のトヨタ生産・販売資料とソニーIR更新を確認した。材料を過大評価せず、トヨタとソニーを各30%、MUFGと日立を各20%に分散する。"},
-    {"agent": "ribao", "name": "反町リバ男", "message": "今週は+0.79%。直近で弱かったホンダ、セブン&アイ、ファーストリテイリングを逆張り候補にする。単なる安値拾いを避けるため、デンソーとダイキンも含め五銘柄へ分散する。"},
-    {"agent": "jiro", "name": "金利次郎", "message": "今週は+1.00%。日銀の補完当座預金制度適用利率1.0%を踏まえ、MUFGを35%とする。通信、JT、TOPIX ETFを組み合わせ、銀行株への集中と金利反転の双方を抑える。"},
-    {"agent": "omakaseko", "name": "運任せ子", "message": "今週は+1.79%。ランダム比較枠として、武田薬品、TOPIX ETF、セブン&アイ、リクルートを各25%にする。裁量判断を混ぜず、ベンチマークとしての役割を守る。"},
-    {"agent": "mirai", "name": "進化未来", "message": "全員が週次プラスだったため重みは月次ルールどおり据え置く。五戦略の計画を既存ウェイトで統合し、MUFG12.22%、日立11.11%を最大として17銘柄へ分散する。"}
+    {
+      "agent": "taro",
+      "name": "上昇太郎",
+      "message": "今日も上昇トレンドを追い続ける！"
+    },
+    {
+      "agent": "aiko",
+      "name": "速読アイ子",
+      "message": "適時開示を確認中。材料次第で動く。"
+    },
+    {
+      "agent": "ribao",
+      "name": "反町リバ男",
+      "message": "売られすぎ銘柄を虎視眈々と狙っている。"
+    },
+    {
+      "agent": "jiro",
+      "name": "金利次郎",
+      "message": "金利動向を注視。マクロ環境は慎重に見極める。"
+    },
+    {
+      "agent": "omakaseko",
+      "name": "運任せ子",
+      "message": "今日もお任せ♪ 運命に身を委ねましょう。"
+    },
+    {
+      "agent": "mirai",
+      "name": "進化未来",
+      "message": "データ収集中。重み調整は月次で実施予定。"
+    }
   ]
 }

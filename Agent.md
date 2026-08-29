@@ -5,7 +5,7 @@
 ## 実行環境の前提
 
 - 作業ディレクトリ: このリポジトリのルート（`ai-broker/`）
-- 必要な環境変数: `OPENAI_API_KEY`
+- 必要な環境変数: `ANTHROPIC_API_KEY` または `OPENAI_API_KEY`
 - repo 内 `.venv` が作成済みで、`requirements.txt` が入っていること
 - git が使用可能なこと
 
@@ -30,3 +30,4 @@ cd /path/to/ai-broker
 - スクリプトはロックファイルで冪等性を保っているため、同日に二重実行されても安全
 - エラー時は `STATE/last_run.json` にエラー内容が記録される
 - git push まで自動で行うため、認証情報（SSH or HTTPS token）が設定済みであること
+- `python` コマンドがない環境があるため、必ず `./.venv/bin/python` で実行すること
