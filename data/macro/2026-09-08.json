@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-08",
+  "indices": {
+    "N225": {
+      "close": 65269.33,
+      "prev_close": 66399.84,
+      "change": -1130.52,
+      "change_pct": -1.7
+    },
+    "TOPIX": {
+      "close": 422.2,
+      "prev_close": 430.1,
+      "change": -7.9,
+      "change_pct": -1.84
+    }
+  },
+  "fetched_at": "2026-09-08T12:14:28.863901"
+}
