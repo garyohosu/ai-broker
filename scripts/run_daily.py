@@ -107,17 +107,23 @@ def _verify_public_url(date_str: str) -> None:
                 raise RuntimeError(f"公開失敗: HTTP {res.status} @ {u}")
             return res.read().decode("utf-8", errors="ignore")
 
+    # GitHub Pages のデプロイは push 後数分かかることがある。
+    # 反映途中の 404 を即座に公開失敗と判定しない。
+    max_attempts = 30
+    retry_interval = 10
     last_err: Exception | None = None
-    for i in range(1, 7):
+    for i in range(1, max_attempts + 1):
         try:
             body = _fetch(url)
             if date_str not in body:
                 raise RuntimeError(f"日付不整合: 公開ページ本文に {date_str} が見つからない @ {url}")
+            logger.info(f"公開確認OK ({i}/{max_attempts}): {url}")
             return
         except Exception as e:
             last_err = e
-            logger.warning(f"公開確認待機 ({i}/6): {e}")
-            time.sleep(10)
+            logger.warning(f"公開確認待機 ({i}/{max_attempts}): {e}")
+            if i < max_attempts:
+                time.sleep(retry_interval)
 
     # トップに対象日リンクが見えていれば公開反映済みと判断
     try:
